@@ -2,19 +2,83 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 replicaCount: 1
+
 image:
   repository: ghcr.io/project-zot/zot-linux-amd64
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "v2.0.0-rc2"
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
   # Annotations to add to the service account
-  annotations: {}
+  annotations: { }
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
+
+nodeSelector: { }
+
+affinity: { }
+
+tolerations: [ ]
+
 service:
   type: NodePort
   port: 5000
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# https://zotregistry.io/v1.4.3/admin-guide/admin-configuration/
+config:
+  distSpecVersion: 1.0.1
+  http:
+    address: 127.0.0.1
+    port: '8080'
+    realm: ""
+    tls:
+      cert: ""
+      key: ""
+    #    Ratelimit:
+    #      Rate: 10
+    #      Methods:
+    #        - Method: GET
+    #          Rate: 5
+    Ratelimit: { }
+  log:
+    level: debug
+  extensions:
+    metrics:
+      enable: false
+    sync:
+      enable: false
+    search:
+      enable: false
+    scrub:
+      enable: false
+    lint:
+      enable: false
+  storage:
+    rootDirectory: "/tmp/zot"
+    commit: true
+    dedupe: true
+    gc: true
+    gcDelay: 1h
+    gcInterval: 24h
+    subpaths: { }
+  #  storageDriver:
+  #    name: s3
+  #    region: us-east-2
+  #    bucket: zot-storage
+  #    secure: true
+  #    skipverify: false
+  #    accesskey: "<YOUR_ACCESS_KEY_ID>"
+  #    secretkey: "<YOUR_SECRET_ACCESS_KEY>"
+  storageDriver: { }
