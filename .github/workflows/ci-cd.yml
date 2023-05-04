@@ -2,6 +2,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   release:
     types:
       - published
@@ -23,8 +26,15 @@ jobs:
         uses: azure/setup-helm@v1
         with:
           version: v3.8.1
-
-      - name: Run chart-releaser
+      - name: Create k8s Kind Cluster
+        uses: helm/kind-action@v1.4.0
+      - name: Verify helm charts
+        run: |
+          cd $GITHUB_WORKSPACE
+          helm lint ./charts/zot
+          helm install --dry-run --generate-name --debug ./charts/zot
+      - if: github.event_name == 'release' && github.event.action== 'published'
+        name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.4.0
         with:
           charts_dir: charts
