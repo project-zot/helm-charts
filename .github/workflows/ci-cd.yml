@@ -5,9 +5,6 @@ on:
   pull_request:
     branches:
       - main
-  release:
-    types:
-      - published
 name: chart-releaser
 jobs:
   helm-chart-release:
@@ -26,14 +23,39 @@ jobs:
         uses: azure/setup-helm@v1
         with:
           version: v3.8.1
-      - name: Create k8s Kind Cluster
-        uses: helm/kind-action@v1.4.0
-      - name: Verify helm charts
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          check-latest: true
+      - name: Install chart-testing
+        uses: helm/chart-testing-action@v2.4.0
+      - if: github.event_name == 'pull_request'
+        name: Set target branch on pull_request
         run: |
-          cd $GITHUB_WORKSPACE
-          helm lint ./charts/zot
-          helm install --dry-run --generate-name --debug ./charts/zot
-      - if: github.event_name == 'release' && github.event.action== 'published'
+          echo "TARGET_BRANCH=${{ github.event.pull_request.base.ref }}" >> $GITHUB_ENV
+          echo "SINCE=HEAD" >> $GITHUB_ENV
+      - if: github.event_name == 'push'
+        name: Set target branch on push
+        run: |
+          echo "TARGET_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
+          echo "SINCE=${{ github.event.before }}" >> $GITHUB_ENV
+      - name: Run chart-testing list-changed
+        id: list-changed
+        run: |
+          changed=$(ct list-changed --target-branch ${{ env.TARGET_BRANCH }} --since ${{ env.SINCE }})
+          if [[ -n "$changed" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Lint helm charts
+        if: steps.list-changed.outputs.changed == 'true' || github.event_name == 'push'
+        run: ct lint --validate-maintainers=false --target-branch ${{ env.TARGET_BRANCH }} --check-version-increment=${{ github.event_name == 'pull_request' }} --since=${{ env.SINCE }}
+      - name: Create k8s Kind Cluster
+        if: steps.list-changed.outputs.changed == 'true' || github.event_name == 'push'
+        uses: helm/kind-action@v1.4.0
+      - name: Install and test helm charts
+        if: steps.list-changed.outputs.changed == 'true' || github.event_name == 'push'
+        run: ct install --target-branch ${{ env.TARGET_BRANCH }} --since ${{ env.SINCE }}
+      - if: github.event_name == 'push' && github.ref_name == 'main'
         name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.4.0
         with:
