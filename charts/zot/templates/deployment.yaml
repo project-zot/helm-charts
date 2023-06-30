@@ -51,6 +51,7 @@ spec:
           {{- end }}
           {{- end }}
           livenessProbe:
+            initialDelaySeconds: 5
             httpGet:
               path: /v2/
               port: 5000
@@ -60,6 +61,7 @@ spec:
                   value: Basic {{ .Values.authHeader }}
               {{- end }}
           readinessProbe:
+            initialDelaySeconds: 5
             httpGet:
               path: /v2/
               port: 5000
