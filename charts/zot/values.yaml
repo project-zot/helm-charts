@@ -39,6 +39,12 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+
+# By default, Kubernetes HTTP probes use HTTP 'scheme'. So if TLS is enabled
+# in configuration, to prevent failures, the scheme must be set to 'HTTPS'.
+httpGet:
+  scheme: HTTP
+
 # If mountConfig is true the configMap named $CHART_RELEASE-config is mounted
 # on the pod's '/etc/zot' directory
 mountConfig: false
@@ -89,10 +95,11 @@ secretFiles:
   htpasswd: |-
     admin:$2y$05$vmiurPmJvHylk78HHFWuruFFVePlit9rZWGA/FbZfTEmNRneGJtha
     user:$2y$05$L86zqQDfH5y445dcMlwu6uHv.oXFgT6AiJCwpv3ehr7idc0rI3S2G
-# Authentication string for tests, it contains a `user:password` string encoded
-# in base64. It is needed when `htpasswd` authentication is enabled and the
-# default access does not provide read permission
-# The example value is from running `echo -n "foo:var" | base64`
+
+# Authentication string for Kubernetes probes, which is needed when `htpasswd`
+# authentication is enabled, but the anonymous access policy is not.
+# It contains a `user:password` string encoded in base64. The example value is
+# from running `echo -n "foo:var" | base64`
 # authHeader: "Zm9vOmJhcg=="
 
 # If persistence is 'true' the service uses a persistentVolumeClaim to mount a
