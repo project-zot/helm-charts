@@ -18,6 +18,8 @@ serviceAccount:
 service:
   type: NodePort
   port: 5000
+  # Annotations to add to the service
+  annotations: {}
 # Enabling this will publicly expose your zot server
 # Only enable this if you have security enabled on your cluster
 ingress:
