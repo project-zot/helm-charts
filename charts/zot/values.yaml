@@ -84,6 +84,12 @@ configFiles:
 #      "log": { "level": "debug" }
 #    }
 
+# if secretFilesSecretName is not empty, the Secret named
+# $secretFilesSecretName is mounted on the pod's '/secret' directory (it is
+# used to keep files with passwords, like a `htpasswd` file).
+# In this case, below 'mountSecret' and 'secretFiles' values are not taken
+# into account.
+secretFilesSecretName: ""
 # If mountSecret is true, the Secret named $CHART_RELEASE-secret is mounted on
 # the pod's '/secret' directory (it is used to keep files with passwords, like
 # a `htpasswd` file)

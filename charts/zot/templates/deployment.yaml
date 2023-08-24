@@ -35,15 +35,15 @@ spec:
             - name: zot
               containerPort: 5000
               protocol: TCP
-          {{- if or .Values.mountConfig .Values.mountSecret .Values.persistence }}
+          {{- if or .Values.mountConfig .Values.mountSecret .Values.persistence .Values.secretFilesSecretName }}
           volumeMounts:
           {{- if .Values.mountConfig }}
             - mountPath: '/etc/zot'
               name: {{ .Release.Name }}-config
           {{- end }}
-          {{- if .Values.mountSecret }}
+          {{- if or .Values.mountSecret .Values.secretFilesSecretName }}
             - mountPath: '/secret'
-              name: {{ .Release.Name }}-secret
+              name: {{ include "zot.secretName" . }}
           {{- end }}
           {{- if .Values.persistence }}
             - mountPath: '/var/lib/registry'
@@ -81,10 +81,10 @@ spec:
           configMap:
             name: {{ .Release.Name }}-config
       {{- end }}
-      {{- if .Values.mountSecret }}
-        - name: {{ .Release.Name }}-secret
+      {{- if or .Values.mountSecret .Values.secretFilesSecretName }}
+        - name: {{ include "zot.secretName" . }}
           secret:
-            secretName: {{ .Release.Name }}-secret
+            secretName: {{ include "zot.secretName" . }}
       {{- end }}
       {{- if .Values.persistence }}
         - name: {{ .Release.Name }}-volume
