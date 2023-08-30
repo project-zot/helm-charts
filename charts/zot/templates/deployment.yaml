@@ -74,7 +74,7 @@ spec:
               {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      {{- if or .Values.mountConfig .Values.persistence }}
+      {{- if or .Values.mountConfig .Values.mountSecret .Values.persistence }}
       volumes:
       {{- if .Values.mountConfig }}
         - name: {{ .Release.Name }}-config
