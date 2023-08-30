@@ -35,7 +35,7 @@ spec:
             - name: zot
               containerPort: 5000
               protocol: TCP
-          {{- if or .Values.mountConfig .Values.mountSecret .Values.persistence }}
+          {{- if or .Values.mountConfig .Values.mountSecret .Values.persistence .Values.externalSecrets }}
           volumeMounts:
           {{- if .Values.mountConfig }}
             - mountPath: '/etc/zot'
@@ -44,6 +44,10 @@ spec:
           {{- if .Values.mountSecret }}
             - mountPath: '/secret'
               name: {{ .Release.Name }}-secret
+          {{- end }}
+          {{- range .Values.externalSecrets }}
+            - mountPath: {{ .mountPath | quote }}
+              name: {{ .secretName | quote }}
           {{- end }}
           {{- if .Values.persistence }}
             - mountPath: '/var/lib/registry'
@@ -74,7 +78,7 @@ spec:
               {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      {{- if or .Values.mountConfig .Values.mountSecret .Values.persistence }}
+      {{- if or .Values.mountConfig .Values.mountSecret .Values.persistence .Values.externalSecrets }}
       volumes:
       {{- if .Values.mountConfig }}
         - name: {{ .Release.Name }}-config
@@ -85,6 +89,11 @@ spec:
         - name: {{ .Release.Name }}-secret
           secret:
             secretName: {{ .Release.Name }}-secret
+      {{- end }}
+      {{- range .Values.externalSecrets }}
+        - name: {{ .secretName }}
+          secret:
+            secretName: {{ .secretName }}
       {{- end }}
       {{- if .Values.persistence }}
         - name: {{ .Release.Name }}-volume

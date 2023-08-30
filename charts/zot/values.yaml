@@ -84,6 +84,21 @@ configFiles:
 #      "log": { "level": "debug" }
 #    }
 
+# externalSecrets allows to mount external (meaning not managed by this chart)
+# Kubernetes secrets within the Zot container.
+# The secret is identified by its name (property "secretName") and should be
+# present in the same namespace. The property "mountPath" specifies the path
+# within the container filesystem where the secret is mounted.
+#
+# Below is an example:
+#
+#  externalSecrets:
+#  - secretName: "secret1"
+#    mountPath: "/secrets/s1"
+#  - secretName: "secret2"
+#    mountPath: "/secrets/s2"
+externalSecrets: []
+
 # If mountSecret is true, the Secret named $CHART_RELEASE-secret is mounted on
 # the pod's '/secret' directory (it is used to keep files with passwords, like
 # a `htpasswd` file)
