@@ -15,5 +15,8 @@ spec:
       targetPort: zot
       protocol: TCP
       name: zot
+      {{- if .Values.service.nodePort }}
+      nodePort: {{ .Values.service.nodePort }}
+      {{- end }}
   selector:
     {{- include "zot.selectorLabels" . | nindent 4 }}
