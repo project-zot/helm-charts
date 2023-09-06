@@ -135,3 +135,13 @@ pvc:
   storage: 8Gi
   # Name of the storage class to use if it is different than the default one
   storageClassName: null
+
+# List of environment variables to set on the container
+env:          
+#- name: "TEST"
+#  value: "ME"
+#- name: SECRET_NAME
+#  valueFrom:
+#    secretKeyRef:
+#      name: mysecret
+#      key: username
