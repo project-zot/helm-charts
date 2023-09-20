@@ -18,7 +18,7 @@ serviceAccount:
 service:
   type: NodePort
   port: 5000
-  nodePort: null # Set to a specific port if type is NodePort
+  nodePort: null  # Set to a specific port if type is NodePort
   # Annotations to add to the service
   annotations: {}
 # Enabling this will publicly expose your zot server
