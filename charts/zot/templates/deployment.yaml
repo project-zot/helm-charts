@@ -26,6 +26,16 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
+        - name: busybox
+          image: busybox:latest
+          # Just spin & wait forever
+          command: [ "/bin/sh", "-c", "--" ]
+          args: [ "while true; do sleep 30; done;" ]
+          volumeMounts:
+          {{- if .Values.mountSecret }}
+            - mountPath: '/secret'
+              name: {{ .Release.Name }}-secret
+          {{- end }}
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
