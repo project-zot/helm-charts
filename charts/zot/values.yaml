@@ -21,6 +21,9 @@ service:
   nodePort: null  # Set to a specific port if type is NodePort
   # Annotations to add to the service
   annotations: {}
+  # Set to a static IP if a static IP is desired, only works when
+  # type: ClusterIP
+  clusterIP: null
 # Enabling this will publicly expose your zot server
 # Only enable this if you have security enabled on your cluster
 ingress:
