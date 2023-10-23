@@ -1,0 +1,36 @@
+zot:
+  mountConfig: true
+  configFiles:
+    config.json: |-
+      {
+        "storage": { "rootDirectory": "/var/lib/registry" },
+        "http": {
+          "address": "0.0.0.0",
+          "port": "5000",
+          "auth": { "htpasswd": { "path": "/secret/htpasswd" } },
+          "accessControl": {
+            "repositories": {
+              "**": {
+                "policies": [{
+                  "users": ["user"],
+                  "actions": ["read"]
+                }],
+                "defaultPolicy": []
+              }
+            },
+            "adminPolicy": {
+              "users": ["admin"],
+              "actions": ["read", "create", "update", "delete"]
+            }
+          }
+        },
+        "log": { "level": "debug" }
+      }
+
+  mountSecret: true
+  secretFiles:
+    # Example htpasswd with 'admin:admin' & 'user:user' user:pass pairs
+    htpasswd: |-
+      admin:$2y$05$vmiurPmJvHylk78HHFWuruFFVePlit9rZWGA/FbZfTEmNRneGJtha
+      user:$2y$05$L86zqQDfH5y445dcMlwu6uHv.oXFgT6AiJCwpv3ehr7idc0rI3S2G
+  authHeader: "dXNlcjp1c2Vy"
