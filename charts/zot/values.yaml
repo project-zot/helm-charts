@@ -154,3 +154,8 @@ env:
 #    secretKeyRef:
 #      name: mysecret
 #      key: username
+
+# Extra Volume Mounts
+extraVolumeMounts: []
+# Extra Volumes
+extraVolumes: []
