@@ -159,3 +159,5 @@ env:
 extraVolumeMounts: []
 # Extra Volumes
 extraVolumes: []
+# Extra Volume Claim Templates
+volumeClaimTemplates: []

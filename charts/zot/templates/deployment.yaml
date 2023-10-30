@@ -121,3 +121,9 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+  {{- if .Values.extraVolumeClaimTemplates }}
+  volumeClaimTemplates:
+    {{- with .Values.volumeClaimTemplates }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
