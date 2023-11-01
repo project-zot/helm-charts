@@ -157,5 +157,10 @@ env:
 
 # Extra Volume Mounts
 extraVolumeMounts: []
+# - name: data
+#   mountPath: /var/lib/registry
+
 # Extra Volumes
 extraVolumes: []
+# - name: data
+#   emptyDir: {}
