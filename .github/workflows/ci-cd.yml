@@ -54,7 +54,12 @@ jobs:
         uses: helm/kind-action@v1.4.0
       - name: Install and test helm charts
         if: steps.list-changed.outputs.changed == 'true' || github.event_name == 'push'
-        run: ct install --target-branch ${{ env.TARGET_BRANCH }} --since ${{ env.SINCE }}
+        run: |
+          for TEST_DIR in tests/ci/*
+          do
+            echo "Running test $(pwd)/${TEST_DIR}"
+            ct install --target-branch ${{ env.TARGET_BRANCH }} --charts $(pwd)/${TEST_DIR}
+          done
       - if: github.event_name == 'push' && github.ref_name == 'main'
         name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.4.0

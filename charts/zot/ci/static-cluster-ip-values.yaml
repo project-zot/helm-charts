@@ -1,3 +1,0 @@
-service:
-  type: ClusterIP
-  clusterIP: 10.96.0.15

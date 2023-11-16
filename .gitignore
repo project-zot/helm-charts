@@ -1,0 +1,5 @@
+# Ignore chart locks produced by ct testing
+tests/ci/*/Chart.lock
+
+# Ignore chart archives produced by ct testing
+tests/ci/*/charts
