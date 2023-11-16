@@ -6,5 +6,5 @@ version: 0.1.0
 appVersion: "0.1.0"
 dependencies:
 - name: zot
-  version: 0.1.35
+  version: ~0.1.35
   repository: "file://../../../charts/zot"
