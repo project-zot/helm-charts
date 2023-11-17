@@ -6,7 +6,7 @@ image:
   repository: ghcr.io/project-zot/zot-linux-amd64
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v2.0.0-rc6"
+  tag: "v2.0.0-rc7"
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
@@ -18,7 +18,7 @@ serviceAccount:
 service:
   type: NodePort
   port: 5000
-  nodePort: null  # Set to a specific port if type is NodePort
+  nodePort: null # Set to a specific port if type is NodePort
   # Annotations to add to the service
   annotations: {}
   # Set to a static IP if a static IP is desired, only works when
@@ -107,7 +107,6 @@ configFiles:
 #  - secretName: "secret2"
 #    mountPath: "/secrets/s2"
 externalSecrets: []
-
 # If mountSecret is true, the Secret named $CHART_RELEASE-secret is mounted on
 # the pod's '/secret' directory (it is used to keep files with passwords, like
 # a `htpasswd` file)
@@ -144,7 +143,6 @@ pvc:
   storage: 8Gi
   # Name of the storage class to use if it is different than the default one
   storageClassName: null
-
 # List of environment variables to set on the container
 env:
 # - name: "TEST"
