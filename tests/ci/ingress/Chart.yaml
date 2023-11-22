@@ -1,0 +1,10 @@
+apiVersion: v2
+name: ingress
+description: Test chart for zot ingress values
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+dependencies:
+- name: zot
+  version: ~0.1.36
+  repository: "file://../../../charts/zot"

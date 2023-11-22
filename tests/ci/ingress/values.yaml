@@ -1,0 +1,17 @@
+zot:
+  service:
+    type: ClusterIP
+    port: 5000
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/tls-acme: "true"
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    className: "nginx"
+    pathtype: ImplementationSpecific
+    hosts:
+      - host: zot.local
+        paths:
+          - path: /

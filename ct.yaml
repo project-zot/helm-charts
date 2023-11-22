@@ -1,0 +1,5 @@
+# See https://github.com/helm/chart-testing#configuration
+chart-dirs:
+  - charts
+additional-commands:
+  - helm unittest --debug --color --strict --file unittests/*.yaml {{ .Path }}

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "zot.fullname" . }}-test-ingress-connection"
+  labels:
+    {{- include "zot.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: alpine:3.18
+      command:
+      - sh
+      - -c
+      - |
+          wget --no-check-certificate --header 'Host: zot.local' http://ingress-nginx-controller.ingress-nginx.svc.cluster.local/v2/_catalog
+  restartPolicy: Never
