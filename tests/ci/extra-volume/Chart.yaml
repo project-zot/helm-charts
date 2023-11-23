@@ -1,0 +1,10 @@
+apiVersion: v2
+name: extra-volumes
+description: Test chart for zot extra-volumes values
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+dependencies:
+- name: zot
+  version: ~0.1.39
+  repository: "file://../../../charts/zot"
