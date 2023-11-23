@@ -1,0 +1,11 @@
+zot:
+  securityContext:
+    runAsUser: 1000
+
+  extraVolumeMounts:
+    - name: data
+      mountPath: /var/lib/registry
+
+  extraVolumes:
+    - name: data
+      emptyDir: {}
