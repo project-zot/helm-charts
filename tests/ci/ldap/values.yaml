@@ -1,0 +1,66 @@
+zot:
+  httpGet:
+    scheme: HTTPS
+
+  mountConfig: true
+  configFiles:
+    config.json: |-
+      {
+        "storage": {
+          "rootDirectory": "/var/lib/registry"
+        },
+        "http": {
+          "address": "0.0.0.0",
+          "port": "5000",
+          "realm": "zot",
+          "tls": {
+            "cert": "/secret/servercert/certificate",
+            "key": "/secret/serverkey/key"
+          },
+          "auth": {
+            "ldap": {
+              "credentialsFile": "/secret/ldap-credentials/ldap-credentials.json",
+              "address": "openldap.default.svc.cluster.local",
+              "port": 1389,
+              "insecure": true,
+              "startTLS": false,
+              "baseDN": "ou=Users,dc=example,dc=com",
+              "userAttribute": "uid",
+              "userGroupAttribute": "memberOf",
+              "skipVerify": true,
+              "subtreeSearch": true
+            },
+            "failDelay": 5
+          },
+          "accessControl": {
+            "repositories": {
+              "**": {
+                "policies": [{
+                  "users": ["user"],
+                  "groups": ["admins", "developers", "cn=ldap-group,ou=Groups,dc=example,dc=com"],
+                  "actions": ["read", "create", "update"]
+                }],
+                "defaultPolicy": []
+              }
+            },
+            "adminPolicy": {
+              "users": ["admin"],
+              "groups": ["admins","developers"],
+              "actions": ["read", "create", "update", "delete"]
+            }
+          }
+        },
+        "log": {
+          "level": "debug"
+        }
+      }
+
+  authHeader: "dXNlcjp1c2Vy"
+
+  externalSecrets:
+    - secretName: "servercert"
+      mountPath: "/secret/servercert"
+    - secretName: "serverkey"
+      mountPath: "/secret/serverkey"
+    - secretName: "ldap-credentials"
+      mountPath: "/secret/ldap-credentials"

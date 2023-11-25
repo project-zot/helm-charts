@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: memberof-secret
+  namespace: default
+data:
+  memberof.ldif: |-
+    ZG46IGNuPW1vZHVsZSxjbj1jb25maWcKY246IG1vZHVsZQpvYmplY3RDbGFzczogb2xjTW9kdWxl
+    TGlzdApvbGNNb2R1bGVQYXRoOiAvb3B0L2JpdG5hbWkvb3BlbmxkYXAvbGliL29wZW5sZGFwCm9s
+    Y01vZHVsZUxvYWQ6IG1lbWJlcm9mLnNvCm9sY01vZHVsZUxvYWQ6IHJlZmludC5zbwoKZG46IG9s
+    Y092ZXJsYXk9bWVtYmVyb2Ysb2xjRGF0YWJhc2U9ezJ9bWRiLGNuPWNvbmZpZwpvYmplY3RDbGFz
+    czogb2xjTWVtYmVyT2YKb2JqZWN0Q2xhc3M6IG9sY092ZXJsYXlDb25maWcKb2JqZWN0Q2xhc3M6
+    IG9sY0NvbmZpZwpvYmplY3RDbGFzczogdG9wCm9sY092ZXJsYXk6IG1lbWJlcm9mCm9sY01lbWJl
+    ck9mRGFuZ2xpbmc6IGlnbm9yZQpvbGNNZW1iZXJPZlJlZkludDogVFJVRQpvbGNNZW1iZXJPZkdy
+    b3VwT0M6IGdyb3VwT2ZOYW1lcwpvbGNNZW1iZXJPZk1lbWJlckFEOiBtZW1iZXIKb2xjTWVtYmVy
+    T2ZNZW1iZXJPZkFEOiBtZW1iZXJPZgoKZG46IG9sY092ZXJsYXk9cmVmaW50LG9sY0RhdGFiYXNl
+    PXsyfW1kYixjbj1jb25maWcKb2JqZWN0Q2xhc3M6IG9sY0NvbmZpZwpvYmplY3RDbGFzczogb2xj
+    T3ZlcmxheUNvbmZpZwpvYmplY3RDbGFzczogb2xjUmVmaW50Q29uZmlnCm9iamVjdENsYXNzOiB0
+    b3AKb2xjT3ZlcmxheTogcmVmaW50Cm9sY1JlZmludEF0dHJpYnV0ZTogbWVtYmVyb2YgbWVtYmVy
+    IG1hbmFnZXIgb3duZXI=
