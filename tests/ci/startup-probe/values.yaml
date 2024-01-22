@@ -1,0 +1,24 @@
+zot:
+  startupProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    # Increase failure threshold to give Zot up to 5 minutes to start up
+    failureThreshold: 30
+  
+  # Create and mount config that enables search/ui extension
+  mountConfig: true
+  configFiles:
+    config.json: |-
+      {
+        "storage": { "rootDirectory": "/var/lib/registry" },
+        "http": { "address": "0.0.0.0", "port": "5000" },
+        "log": { "level": "debug" },
+        "extensions": {
+          "search": {
+            "enable": true
+          },
+          "ui": {
+            "enable": true
+          }
+        }
+      }
