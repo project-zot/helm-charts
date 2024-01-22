@@ -51,7 +51,7 @@ httpGet:
   scheme: HTTP
 # By default, Kubernetes considers a Pod healthy if the liveness probe returns
 # successfully. However, sometimes applications need additional startup time on
-# their first initalization. By defining a startupProbe, we can allow the
+# their first initialization. By defining a startupProbe, we can allow the
 # application to take extra time for initialization without compromising fast
 # response to deadlocks.
 startupProbe:
