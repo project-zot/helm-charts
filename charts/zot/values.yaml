@@ -49,6 +49,15 @@ ingress:
 # in configuration, to prevent failures, the scheme must be set to 'HTTPS'.
 httpGet:
   scheme: HTTP
+# By default, Kubernetes considers a Pod healthy if the liveness probe returns
+# successfully. However, sometimes applications need additional startup time on
+# their first initialization. By defining a startupProbe, we can allow the
+# application to take extra time for initialization without compromising fast
+# response to deadlocks.
+startupProbe:
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  failureThreshold: 3
 # If mountConfig is true the configMap named $CHART_RELEASE-config is mounted
 # on the pod's '/etc/zot' directory
 mountConfig: false
