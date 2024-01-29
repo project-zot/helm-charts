@@ -63,7 +63,11 @@ jobs:
           do
             echo "Running test $(pwd)/${TEST_DIR}"
             ct install --target-branch ${{ env.TARGET_BRANCH }} --charts $(pwd)/${TEST_DIR}
-          done
+          done      
+      - name: Run an upgrade test
+        if: steps.list-changed.outputs.changed == 'true' || github.event_name == 'push'
+        run: |
+          ct install --upgrade --target-branch ${{ env.TARGET_BRANCH }}
       - if: github.event_name == 'push' && github.ref_name == 'main'
         name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.4.0
