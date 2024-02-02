@@ -171,3 +171,5 @@ extraVolumeMounts: []
 extraVolumes: []
 # - name: data
 #   emptyDir: {}
+
+podAnnotations: {}
