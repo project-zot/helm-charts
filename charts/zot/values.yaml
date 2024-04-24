@@ -178,4 +178,17 @@ strategy:
 #  rollingUpdate:
 #    maxUnavailable: 25%
 
+# Extra args to pass to the deployment's container
+extraArgs: []
+
 podAnnotations: {}
+
+podLabels: {}
+
+deploymentAnnotations: {}
+
+priorityClassName: ""
+
+dnsConfig: {}
+
+dnsPolicy: "ClusterFirst"
