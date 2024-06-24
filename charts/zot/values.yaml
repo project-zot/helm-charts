@@ -177,3 +177,18 @@ strategy:
 #    maxUnavailable: 25%
 
 podAnnotations: {}
+
+# Metrics configuration
+# NOTE: need enable metric extension in config.json
+metrics:
+  # Start a prometheus exporter
+  enabled: false
+
+  # Prometheus Operator ServiceMonitor configuration
+  serviceMonitor:
+    # Start a ServiceMonitor for Prometheus Operator
+    enabled: false
+    # Specify the interval at which metrics should be scraped
+    interval: "30s"
+    # Specify the path to scrape metrics from
+    path: "/metrics"
