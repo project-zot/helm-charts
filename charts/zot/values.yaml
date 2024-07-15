@@ -63,9 +63,7 @@ startupProbe:
 mountConfig: false
 # If mountConfig is true the chart creates the '$CHART_RELEASE-config', if it
 # does not exist the user is in charge of managing it (as this file includes a
-# sample file you have to add it empty to handle it externally) ... note that
-# the service does not reload the configFiles once mounted, so you need to
-# delete the pods to create new ones to use the new values.
+# sample file you have to add it empty to handle it externally).
 configFiles:
   config.json: |-
     {

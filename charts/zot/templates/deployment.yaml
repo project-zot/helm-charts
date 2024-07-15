@@ -22,6 +22,9 @@ spec:
         {{- if and .Values.mountConfig .Values.configFiles }}
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- end }}
+        {{- if and .Values.mountSecret .Values.secretFiles }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- end }}
         {{- if .Values.forceRoll }}
         rollme: {{ randAlphaNum 5 | quote }}
         {{- end }}
