@@ -6,7 +6,7 @@ image:
   repository: ghcr.io/project-zot/zot-linux-amd64
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v2.1.0"
+  tag: "v2.1.1"
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
@@ -177,13 +177,11 @@ strategy:
 #    maxUnavailable: 25%
 
 podAnnotations: {}
-
 # Metrics configuration
 # NOTE: need enable metric extension in config.json
 metrics:
   # Start a prometheus exporter
   enabled: false
-
   # Prometheus Operator ServiceMonitor configuration
   serviceMonitor:
     # Start a ServiceMonitor for Prometheus Operator
