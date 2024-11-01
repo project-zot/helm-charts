@@ -6,7 +6,7 @@ image:
   repository: ghcr.io/project-zot/zot-linux-amd64
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v2.1.2-rc2"
+  tag: "v2.1.2-rc3"
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
@@ -178,19 +178,12 @@ strategy:
 
 # Extra args to pass to the deployment's container
 extraArgs: []
-
 podAnnotations: {}
-
 podLabels: {}
-
 deploymentAnnotations: {}
-
 priorityClassName: ""
-
 dnsConfig: {}
-
 dnsPolicy: "ClusterFirst"
-
 # Metrics configuration
 # NOTE: need enable metric extension in config.json
 metrics:
