@@ -3,6 +3,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: {{ .Values.pvc.name | default (printf "%s-pvc" .Release.Name) }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
 spec:
   accessModes:
   - {{ .Values.pvc.accessMode | default "ReadWriteOnce" }}

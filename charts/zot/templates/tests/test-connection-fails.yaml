@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: "{{ include "zot.fullname" . }}-test-connection-fails"
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
   labels:
     {{- include "zot.labels" . | nindent 4 }}
   annotations:
