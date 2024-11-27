@@ -6,7 +6,7 @@ image:
   repository: ghcr.io/project-zot/zot-linux-amd64
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v2.1.2-rc3"
+  tag: ""
 # Defaults to the release namespace if not specified
 namespace: ""
 serviceAccount:
@@ -18,26 +18,24 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 service:
-  type: NodePort
+  type: ClusterIP
   port: 5000
-  nodePort: null  # Set to a specific port if type is NodePort
+  nodePort: null  # Set to a specific port if service.type: NodePort
   # Annotations to add to the service
   annotations: {}
   # Set to a static IP if a static IP is desired, only works when
-  # type: ClusterIP
+  # service.type: ClusterIP
   clusterIP: null
 # Enabling this will publicly expose your zot server
 # Only enable this if you have security enabled on your cluster
 ingress:
   enabled: false
   annotations: {}
-  # kubernetes.io/ingress.class: nginx
-  # kubernetes.io/tls-acme: "true"
-  # If using nginx, disable body limits and increase read and write timeouts
+  # Common annotations for nginx-ingress for handling size/timeouts
   # nginx.ingress.kubernetes.io/proxy-body-size: "0"
   # nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
   # nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
-  className: "nginx"
+  className: ""
   pathtype: ImplementationSpecific
   hosts:
     - host: chart-example.local
