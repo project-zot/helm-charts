@@ -133,25 +133,20 @@ secretFiles:
 # from running `echo -n "foo:var" | base64`
 # authHeader: "Zm9vOmJhcg=="
 
-# If persistence is 'true' the service uses a persistentVolumeClaim to mount a
-# volume for zot on '/var/lib/registry'; by default the pvc used is named
-# '$CHART_RELEASE-pvc', but the name can be changed below
-persistence: false
-# PVC data, only used if persistence is 'true'
-pvc:
-  # Make the chart create the PVC, this option is used with storageClasses that
-  # can create volumes dynamically, if that is not the case is better to do it
-  # manually and set create to false
-  create: false
+persistence:
+  # If persistence is 'true' the service uses a persistentVolumeClaim to mount a
+  # volume for zot on '/var/lib/registry'; by default the pvc used is named
+  # '$CHART_RELEASE-pvc', but the name can be changed below
+  enabled: false
   # Name of the PVC to use or create if persistence is enabled, if not set the
   # value '$CHART_RELEASE-pvc' is used
-  name: null
+  # name: null
   # Volume access mode, if using more than one replica we need
-  accessMode: "ReadWriteOnce"
+  accessModes: ["ReadWriteOnce"]
   # Size of the volume requested
-  storage: 8Gi
+  size: 8Gi
   # Name of the storage class to use if it is different than the default one
-  storageClassName: null
+  # storageClassName: null
 # List of environment variables to set on the container
 env:
 # - name: "TEST"

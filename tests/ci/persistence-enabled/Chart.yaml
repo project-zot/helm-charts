@@ -1,0 +1,10 @@
+apiVersion: v2
+name: persistence-enabled
+description: Test chart for zot persistence-enabled values
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+dependencies:
+- name: zot
+  version: 0.2.0
+  repository: "file://../../../charts/zot"
