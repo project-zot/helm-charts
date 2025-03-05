@@ -199,3 +199,9 @@ metrics:
     interval: "30s"
     # Specify the path to scrape metrics from
     path: "/metrics"
+
+# Test hooks configuration
+test:
+  image:
+    repository: alpine
+    tag: "3.18"
