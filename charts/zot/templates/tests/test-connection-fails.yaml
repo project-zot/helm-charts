@@ -11,7 +11,11 @@ metadata:
 spec:
   containers:
     - name: wget
+      {{- if and (index .Values "test") (index .Values "test" "image") }}
+      image: {{ .Values.test.image.repository | default "alpine" }}:{{ .Values.test.image.tag | default "3.18" }}
+      {{- else }}
       image: alpine:3.18
+      {{- end }}
       command:
       - sh
       - -c
