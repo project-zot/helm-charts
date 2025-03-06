@@ -32,7 +32,7 @@ jobs:
           helm env
           helm plugin install https://github.com/quintush/helm-unittest
       - name: Install chart-testing
-        uses: helm/chart-testing-action@v2.6.1
+        uses: helm/chart-testing-action@v2.7.0
       - if: github.event_name == 'pull_request'
         name: Set target branch on pull_request
         run: |
@@ -67,7 +67,7 @@ jobs:
       - name: Run an upgrade test
         if: steps.list-changed.outputs.changed == 'true' || github.event_name == 'push'
         run: |
-          ct install --upgrade --target-branch ${{ env.TARGET_BRANCH }}
+          ct install --upgrade --target-branch ${{ env.TARGET_BRANCH }} --debug
       - if: github.event_name == 'push' && github.ref_name == 'main'
         name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.4.0
