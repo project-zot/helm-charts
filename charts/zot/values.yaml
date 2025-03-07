@@ -26,6 +26,8 @@ service:
   # Set to a static IP if a static IP is desired, only works when
   # type: ClusterIP
   clusterIP: null
+  # Specify how internal traffic is handled (Cluster or Local)
+  internalTrafficPolicy: null
 # Enabling this will publicly expose your zot server
 # Only enable this if you have security enabled on your cluster
 ingress:
