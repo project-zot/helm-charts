@@ -1,6 +1,6 @@
-{{ if not .Values.persistence }}
+{{- if .Values.persistence  -}}
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ include "zot.fullname" . }}
   namespace: {{ .Values.namespace | default .Release.Namespace }}
@@ -12,13 +12,21 @@ metadata:
   {{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
-  {{- with .Values.strategy }}
-  strategy:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
   selector:
     matchLabels:
       {{- include "zot.selectorLabels" . | nindent 6 }}
+  minReadySeconds: 10
+  volumeClaimTemplates:
+    - metadata:
+        name: {{or .Values.pvc.name .Release.Name}}-pvc
+      spec:
+        accessModes: {{or .Values.pvc.accessModes | .Values.pvc.accessMode }}
+        resources:
+          requests:
+            storage: {{ .Values.pvc.storage }}
+        {{- if .Values.pvc.storageClassName }}
+        storageClassName: "{{ .Values.pvc.storageClassName }}"
+        {{- end }}
   template:
     metadata:
       annotations:
@@ -67,8 +75,8 @@ spec:
               containerPort: 5000
               protocol: TCP
           volumeMounts:
-            - name: data
-              mountPath: /var/lib/registry
+            - mountPath: '/var/lib/registry'
+              name: {{ .Release.Name }}-pvc
           {{- if .Values.mountConfig }}
             - mountPath: '/etc/zot'
               name: {{ .Release.Name }}-config
@@ -121,9 +129,8 @@ spec:
               {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      {{- if or .Values.mountConfig .Values.mountSecret .Values.externalSecrets (not (empty .Values.extraVolumes)) }}
       volumes:
-        - name: data
-          emptyDir: {}
       {{- if .Values.mountConfig }}
         - name: {{ .Release.Name }}-config
           configMap:
@@ -142,6 +149,7 @@ spec:
       {{- with .Values.extraVolumes }}
       {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -159,4 +167,4 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       dnsPolicy: {{ .Values.dnsPolicy }}
-{{ end }}
+{{- end -}}
