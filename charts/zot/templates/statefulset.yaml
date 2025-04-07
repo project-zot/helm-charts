@@ -20,7 +20,12 @@ spec:
     - metadata:
         name: {{or .Values.pvc.name .Release.Name}}-pvc
       spec:
-        accessModes: {{or .Values.pvc.accessModes | .Values.pvc.accessMode }}
+        accessModes:
+        {{- if .Values.pvc.accessMode }}
+        - {{ .Values.pvc.accessMode | default "ReadWriteOnce" }}
+        {{- else }}
+        {{- toYaml .Values.pvc.accessModes | nindent 10 }}
+        {{- end }}
         resources:
           requests:
             storage: {{ .Values.pvc.storage }}

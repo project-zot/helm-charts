@@ -1,0 +1,96 @@
+suite: statefulset tests
+templates:
+  - statefulset.yaml
+tests:
+  - it: should not create statefulset when persistence is disabled
+    set:
+      persistence: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should create statefulset when persistence is enabled
+    set:
+      persistence: true
+      pvc:
+        storage: 10Gi
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: StatefulSet
+
+  - it: should handle PVC accessModes as a list
+    set:
+      persistence: true
+      pvc:
+        storage: 10Gi
+        accessModes:
+          - ReadWriteOnce
+          - ReadOnlyMany
+    asserts:
+      - equal:
+          path: spec.volumeClaimTemplates[0].spec.accessModes[0]
+          value: ReadWriteOnce
+      - equal:
+          path: spec.volumeClaimTemplates[0].spec.accessModes[1]
+          value: ReadOnlyMany
+
+  - it: should handle legacy PVC accessMode as a single item
+    set:
+      persistence: true
+      pvc:
+        storage: 10Gi
+        accessMode: ReadWriteMany
+        accessModes: []
+    asserts:
+      - equal:
+          path: spec.volumeClaimTemplates[0].spec.accessModes[0]
+          value: ReadWriteMany
+      - lengthEqual:
+          path: spec.volumeClaimTemplates[0].spec.accessModes
+          count: 1
+
+  - it: should use default accessMode when neither is specified
+    set:
+      persistence: true
+      pvc:
+        storage: 10Gi
+    asserts:
+      - equal:
+          path: spec.volumeClaimTemplates[0].spec.accessModes[0]
+          value: ReadWriteOnce
+      - lengthEqual:
+          path: spec.volumeClaimTemplates[0].spec.accessModes
+          count: 1
+
+  - it: should set storageClassName when specified
+    set:
+      persistence: true
+      pvc:
+        storage: 10Gi
+        storageClassName: fast-storage
+    asserts:
+      - equal:
+          path: spec.volumeClaimTemplates[0].spec.storageClassName
+          value: "fast-storage"
+
+  - it: should not set storageClassName when not specified
+    set:
+      persistence: true
+      pvc:
+        storage: 10Gi
+    asserts:
+      - isNull:
+          path: spec.volumeClaimTemplates[0].spec.storageClassName
+
+  - it: should use custom PVC name when specified
+    set:
+      persistence: true
+      pvc:
+        name: custom-pvc
+        storage: 10Gi
+    asserts:
+      - equal:
+          path: spec.volumeClaimTemplates[0].metadata.name
+          value: custom-pvc-pvc
