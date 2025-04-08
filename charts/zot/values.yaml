@@ -147,7 +147,7 @@ pvc:
   # value '$CHART_RELEASE-pvc' is used
   name: null
   # Volume access mode, if using more than one replica we need
-  accessMode: "ReadWriteOnce"
+  accessModes: ["ReadWriteOnce"]
   # Size of the volume requested
   storage: 8Gi
   # Name of the storage class to use if it is different than the default one
