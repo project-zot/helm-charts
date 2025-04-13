@@ -70,11 +70,11 @@ spec:
             - name: data
               mountPath: /var/lib/registry
           {{- if .Values.mountConfig }}
-            - mountPath: '/etc/zot'
+            - mountPath: "/etc/zot"
               name: {{ .Release.Name }}-config
           {{- end }}
           {{- if .Values.mountSecret }}
-            - mountPath: '/secret'
+            - mountPath: "/secret"
               name: {{ .Release.Name }}-secret
           {{- end }}
           {{- range .Values.externalSecrets }}
@@ -90,10 +90,14 @@ spec:
               path: /v2/
               port: 5000
               scheme: {{ .Values.httpGet.scheme }}
-              {{- if .Values.authHeader }}
+              {{- if and .Values.probeAuthFromSecret.enabled .Values.probeAuthFromSecret.secretName }}
               httpHeaders:
                 - name: Authorization
-                  value: Basic {{ .Values.authHeader }}
+                  value: "Basic {{ (index (lookup \"v1\" \"Secret\" $.Release.Namespace .Values.probeAuthFromSecret.secretName).data .Values.probeAuthFromSecret.secretKey) | b64decode }}"
+              {{- else if .Values.authHeader }}
+              httpHeaders:
+                - name: Authorization
+                  value: "Basic {{ .Values.authHeader }}"
               {{- end }}
           readinessProbe:
             initialDelaySeconds: 5
@@ -101,10 +105,14 @@ spec:
               path: /v2/
               port: 5000
               scheme: {{ .Values.httpGet.scheme }}
-              {{- if .Values.authHeader }}
+              {{- if and .Values.probeAuthFromSecret.enabled .Values.probeAuthFromSecret.secretName }}
               httpHeaders:
                 - name: Authorization
-                  value: Basic {{ .Values.authHeader }}
+                  value: "Basic {{ (index (lookup \"v1\" \"Secret\" $.Release.Namespace .Values.probeAuthFromSecret.secretName).data .Values.probeAuthFromSecret.secretKey) | b64decode }}"
+              {{- else if .Values.authHeader }}
+              httpHeaders:
+                - name: Authorization
+                  value: "Basic {{ .Values.authHeader }}"
               {{- end }}
           startupProbe:
             initialDelaySeconds: {{ .Values.startupProbe.initialDelaySeconds }}
@@ -114,10 +122,14 @@ spec:
               path: /v2/
               port: 5000
               scheme: {{ .Values.httpGet.scheme }}
-              {{- if .Values.authHeader }}
+              {{- if and .Values.probeAuthFromSecret.enabled .Values.probeAuthFromSecret.secretName }}
               httpHeaders:
                 - name: Authorization
-                  value: Basic {{ .Values.authHeader }}
+                  value: "Basic {{ (index (lookup \"v1\" \"Secret\" $.Release.Namespace .Values.probeAuthFromSecret.secretName).data .Values.probeAuthFromSecret.secretKey) | b64decode }}"
+              {{- else if .Values.authHeader }}
+              httpHeaders:
+                - name: Authorization
+                  value: "Basic {{ .Values.authHeader }}"
               {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
