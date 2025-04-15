@@ -106,7 +106,7 @@ spec:
               {{- if and .Values.probeAuthFromSecret.enabled .Values.probeAuthFromSecret.secretName }}
               httpHeaders:
                 - name: Authorization
-                  value: 'Basic {{ (index (lookup "v1" "Secret" $.Release.Namespace .Values.probeAuthFromSecret.secretName).data .Values.probeAuthFromSecret.secretKey) | b64decode }}'
+                  value: 'Basic {{ index (lookup "v1" "Secret" $.Release.Namespace .Values.probeAuthFromSecret.secretName).data .Values.probeAuthFromSecret.secretKey }}'
               {{- else if .Values.authHeader }}
               httpHeaders:
                 - name: Authorization
@@ -121,7 +121,7 @@ spec:
               {{- if and .Values.probeAuthFromSecret.enabled .Values.probeAuthFromSecret.secretName }}
               httpHeaders:
                 - name: Authorization
-                  value: 'Basic {{ (index (lookup "v1" "Secret" $.Release.Namespace .Values.probeAuthFromSecret.secretName).data .Values.probeAuthFromSecret.secretKey) | b64decode }}'
+                  value: 'Basic {{ index (lookup "v1" "Secret" $.Release.Namespace .Values.probeAuthFromSecret.secretName).data .Values.probeAuthFromSecret.secretKey }}'
               {{- else if .Values.authHeader }}
               httpHeaders:
                 - name: Authorization
@@ -138,7 +138,7 @@ spec:
               {{- if and .Values.probeAuthFromSecret.enabled .Values.probeAuthFromSecret.secretName }}
               httpHeaders:
                 - name: Authorization
-                  value: 'Basic {{ (index (lookup "v1" "Secret" $.Release.Namespace .Values.probeAuthFromSecret.secretName).data .Values.probeAuthFromSecret.secretKey) | b64decode }}'
+                  value: 'Basic {{ index (lookup "v1" "Secret" $.Release.Namespace .Values.probeAuthFromSecret.secretName).data .Values.probeAuthFromSecret.secretKey }}'
               {{- else if .Values.authHeader }}
               httpHeaders:
                 - name: Authorization
