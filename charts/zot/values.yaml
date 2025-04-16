@@ -134,15 +134,11 @@ secretFiles:
 # from running `echo -n "foo:var" | base64`
 # authHeader: "Zm9vOmJhcg=="
 
-# Alternatitvely, the authentication string can be stored in a Kubernetes secret now
 probeAuthFromSecret:
-  enabled: true
-  secretName: ""
-  secretKey: "probesAuthHeader"
+  enabled: false          # set true to activate
+  secretName: ""          # existing Secret name (must exist before Helm runs)
+  secretKey: probesAuthHeader  # key inside that Secret holding base64(user:pass)
 
-# If persistence is 'true' the service uses a persistentVolumeClaim to mount a
-# volume for zot on '/var/lib/registry'; by default the pvc used is named
-# '$CHART_RELEASE-pvc', but the name can be changed below
 persistence: false
 # PVC data, only used if persistence is 'true'
 pvc:
