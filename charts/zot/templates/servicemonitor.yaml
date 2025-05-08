@@ -30,6 +30,15 @@ spec:
       {{- if .Values.metrics.serviceMonitor.scheme }}
       scheme: {{ .Values.metrics.serviceMonitor.scheme }}
       {{- end }}
+      {{- if .Values.metrics.serviceMonitor.basicAuth }}
+      basicAuth:
+        password:
+          name: {{ .Values.metrics.serviceMonitor.basicAuth.secretName }}
+          key: {{ .Values.metrics.serviceMonitor.basicAuth.passwordKey }}
+        username:
+          name: {{ .Values.metrics.serviceMonitor.basicAuth.secretName }}
+          key: {{ .Values.metrics.serviceMonitor.basicAuth.userKey }}
+      {{- end }}
   namespaceSelector:
     matchNames:
       - {{ .Release.Namespace }}
