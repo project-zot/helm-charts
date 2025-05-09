@@ -199,6 +199,11 @@ metrics:
     interval: "30s"
     # Specify the path to scrape metrics from
     path: "/metrics"
+    # basicAuth credentials for serviceMonitor
+    basicAuth:
+      secretName: basic-auth
+      usernameKey: username
+      passwordKey: password
 
 # Test hooks configuration
 test:
