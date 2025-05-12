@@ -34,10 +34,10 @@ spec:
       basicAuth:
         password:
           name: {{ .Values.metrics.serviceMonitor.basicAuth.secretName }}
-          key: {{ .Values.metrics.serviceMonitor.basicAuth.passwordKey }}
+          key: {{ .Values.metrics.serviceMonitor.basicAuth.passwordKey | default ("password") }}
         username:
           name: {{ .Values.metrics.serviceMonitor.basicAuth.secretName }}
-          key: {{ .Values.metrics.serviceMonitor.basicAuth.userKey }}
+          key: {{ .Values.metrics.serviceMonitor.basicAuth.usernameKey | default ("username") }}
       {{- end }}
   namespaceSelector:
     matchNames:
