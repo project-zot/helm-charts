@@ -14,6 +14,9 @@ spec:
   {{- if and .Values.service.clusterIP ( eq .Values.service.type "ClusterIP" ) }}
   clusterIP: {{ .Values.service.clusterIP }}
   {{- end }}
+  {{- if .Values.service.internalTrafficPolicy }}
+  internalTrafficPolicy: {{ .Values.service.internalTrafficPolicy }}
+  {{- end }}
   ports:
     - port: {{ .Values.service.port }}
       targetPort: zot
