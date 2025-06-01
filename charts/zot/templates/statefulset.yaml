@@ -1,4 +1,4 @@
-{{- if .Values.persistence  -}}
+{{- if .Values.persistence }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -18,7 +18,7 @@ spec:
   minReadySeconds: 10
   volumeClaimTemplates:
     - metadata:
-        name: {{or .Values.pvc.name .Release.Name}}-pvc
+        name: {{ or .Values.pvc.name .Release.Name }}-pvc
       spec:
         accessModes:
         {{- if .Values.pvc.accessMode }}
@@ -80,14 +80,14 @@ spec:
               containerPort: 5000
               protocol: TCP
           volumeMounts:
-            - mountPath: '/var/lib/registry'
+            - mountPath: "/var/lib/registry"
               name: {{ .Release.Name }}-pvc
           {{- if .Values.mountConfig }}
-            - mountPath: '/etc/zot'
+            - mountPath: "/etc/zot"
               name: {{ .Release.Name }}-config
           {{- end }}
           {{- if .Values.mountSecret }}
-            - mountPath: '/secret'
+            - mountPath: "/secret"
               name: {{ .Release.Name }}-secret
           {{- end }}
           {{- range .Values.externalSecrets }}
@@ -97,28 +97,46 @@ spec:
           {{- with .Values.extraVolumeMounts }}
           {{- toYaml . | nindent 12 }}
           {{- end }}
+
+          #####################################################################
+          #               PROBE  HEADER  RESOLUTION  (nil‑safe)               #
+          #####################################################################
+          {{- /* Resolve header once so we can reuse in all three probes */}}
+          {{- $hdr := "" }}
+          {{- if and .Values.probeAuthFromSecret.enabled .Values.probeAuthFromSecret.secretName }}
+            {{- $sec := lookup "v1" "Secret" $.Release.Namespace .Values.probeAuthFromSecret.secretName }}
+            {{- if and $sec $sec.data (hasKey $sec.data .Values.probeAuthFromSecret.secretKey) }}
+              {{- $hdr = index $sec.data .Values.probeAuthFromSecret.secretKey }}
+            {{- end }}
+          {{- end }}
+          {{- if and (eq $hdr "") .Values.authHeader }}
+            {{- $hdr = .Values.authHeader }}
+          {{- end }}
+
           livenessProbe:
             initialDelaySeconds: 5
             httpGet:
               path: /v2/
               port: 5000
               scheme: {{ .Values.httpGet.scheme }}
-              {{- if .Values.authHeader }}
+              {{- if ne $hdr "" }}
               httpHeaders:
                 - name: Authorization
-                  value: Basic {{ .Values.authHeader }}
+                  value: 'Basic {{ $hdr }}'
               {{- end }}
+
           readinessProbe:
             initialDelaySeconds: 5
             httpGet:
               path: /v2/
               port: 5000
               scheme: {{ .Values.httpGet.scheme }}
-              {{- if .Values.authHeader }}
+              {{- if ne $hdr "" }}
               httpHeaders:
                 - name: Authorization
-                  value: Basic {{ .Values.authHeader }}
+                  value: 'Basic {{ $hdr }}'
               {{- end }}
+
           startupProbe:
             initialDelaySeconds: {{ .Values.startupProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.startupProbe.periodSeconds }}
@@ -127,13 +145,15 @@ spec:
               path: /v2/
               port: 5000
               scheme: {{ .Values.httpGet.scheme }}
-              {{- if .Values.authHeader }}
+              {{- if ne $hdr "" }}
               httpHeaders:
                 - name: Authorization
-                  value: Basic {{ .Values.authHeader }}
+                  value: 'Basic {{ $hdr }}'
               {{- end }}
+
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+
       {{- if or .Values.mountConfig .Values.mountSecret .Values.externalSecrets (not (empty .Values.extraVolumes)) }}
       volumes:
       {{- if .Values.mountConfig }}
@@ -173,3 +193,4 @@ spec:
       {{- end }}
       dnsPolicy: {{ .Values.dnsPolicy }}
 {{- end -}}
+

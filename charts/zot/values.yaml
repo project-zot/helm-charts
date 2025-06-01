@@ -51,7 +51,8 @@ ingress:
 # in configuration, to prevent failures, the scheme must be set to 'HTTPS'.
 httpGet:
   scheme: HTTP
-# By default, Kubernetes considers a Pod healthy if the liveness probe returns
+
+  # By default, Kubernetes considers a Pod healthy if the liveness probe returns
 # successfully. However, sometimes applications need additional startup time on
 # their first initialization. By defining a startupProbe, we can allow the
 # application to take extra time for initialization without compromising fast
@@ -133,9 +134,11 @@ secretFiles:
 # from running `echo -n "foo:var" | base64`
 # authHeader: "Zm9vOmJhcg=="
 
-# If persistence is 'true' the service uses a persistentVolumeClaim to mount a
-# volume for zot on '/var/lib/registry'; by default the pvc used is named
-# '$CHART_RELEASE-pvc', but the name can be changed below
+probeAuthFromSecret:
+  enabled: false          # set true to activate
+  secretName: ""          # existing Secret name (must exist before Helm runs)
+  secretKey: probesAuthHeader  # key inside that Secret holding base64(user:pass)
+
 persistence: false
 # PVC data, only used if persistence is 'true'
 pvc:
