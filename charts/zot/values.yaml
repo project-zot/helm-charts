@@ -172,6 +172,12 @@ extraVolumes: []
 # - name: data
 #   emptyDir: {}
 
+# Extra Containers running alongside the main container
+extraContainers: []
+# - name: data
+#   image: busybox
+#   command: ["sleep", "infinity"]
+
 # Deployment strategy type
 strategy:
   type: RollingUpdate
