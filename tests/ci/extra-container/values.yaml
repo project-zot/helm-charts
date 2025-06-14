@@ -1,0 +1,41 @@
+zot:
+  # Test extraContainers functionality with both deployment and statefulset scenarios
+  extraContainers:
+    - name: sidecar-nginx
+      image: nginx:alpine
+      ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+      volumeMounts:
+        - name: shared-data
+          mountPath: /usr/share/nginx/html
+      resources:
+        limits:
+          memory: "128Mi"
+          cpu: "100m"
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+    - name: busybox-logger
+      image: busybox:latest
+      command: ["sh", "-c"]
+      args: ["while true; do echo 'Logging from sidecar'; sleep 30; done"]
+      resources:
+        limits:
+          memory: "64Mi"
+          cpu: "50m"
+        requests:
+          memory: "32Mi"
+          cpu: "25m"
+
+  # Add extra volumes to support the sidecar containers
+  extraVolumes:
+    - name: shared-data
+      emptyDir: {}
+
+  # Set security context for testing
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
