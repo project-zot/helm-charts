@@ -1,0 +1,61 @@
+zot:
+  # Enable persistence to test extraContainers with StatefulSet
+  persistence: true
+
+  # PVC configuration for StatefulSet
+  pvc:
+    create: true
+    storage: 1Gi
+    accessModes: ["ReadWriteOnce"]
+
+  # Test extraContainers functionality with StatefulSet
+  extraContainers:
+    - name: sidecar-redis
+      image: redis:alpine
+      ports:
+        - containerPort: 6379
+          name: redis
+          protocol: TCP
+      command: ["redis-server"]
+      args: ["--appendonly", "yes"]
+      volumeMounts:
+        - name: redis-data
+          mountPath: /data
+      resources:
+        limits:
+          memory: "256Mi"
+          cpu: "200m"
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+    - name: monitoring-agent
+      image: busybox:latest
+      command: ["sh", "-c"]
+      args: ["while true; do echo 'Monitoring StatefulSet pod'; df -h; sleep 60; done"]
+      resources:
+        limits:
+          memory: "64Mi"
+          cpu: "50m"
+        requests:
+          memory: "32Mi"
+          cpu: "25m"
+
+  # Add extra volumes to support the sidecar containers
+  extraVolumes:
+    - name: redis-data
+      emptyDir: {}
+
+  # Set security context for testing
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+
+  # Use lower resource requirements for testing
+  resources:
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
