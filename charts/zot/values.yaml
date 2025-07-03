@@ -17,6 +17,13 @@ serviceAccount:
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
+serviceHeadless:
+  # Enable headless service, only for statefulset
+  enabled: false
+  # Headless service port
+  port: 5000
+  # Annotations to add to the headless service
+  annotations: {}
 service:
   type: NodePort
   port: 5000

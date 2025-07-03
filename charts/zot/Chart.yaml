@@ -3,4 +3,4 @@ appVersion: v2.1.5
 description: A Helm chart for Kubernetes
 name: zot
 type: application
-version: 0.1.74
+version: 0.1.75
