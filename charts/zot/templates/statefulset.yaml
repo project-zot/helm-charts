@@ -11,6 +11,9 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
+  {{- if .Values.service.headless.enabled }}
+  serviceName: {{ include "zot.fullname" . }}-headless
+  {{- end }}
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:

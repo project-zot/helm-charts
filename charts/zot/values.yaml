@@ -18,6 +18,13 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 service:
+  headless:
+    # Enable headless service, only for statefulset
+    enabled: true
+    # Headless service port
+    port: 5000
+    # Annotations to add to the headless service
+    annotations: {}
   type: NodePort
   port: 5000
   nodePort: null  # Set to a specific port if type is NodePort
