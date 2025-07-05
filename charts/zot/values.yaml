@@ -58,6 +58,7 @@ ingress:
 # in configuration, to prevent failures, the scheme must be set to 'HTTPS'.
 httpGet:
   scheme: HTTP
+  port: 5000
 # By default, Kubernetes considers a Pod healthy if the liveness probe returns
 # successfully. However, sometimes applications need additional startup time on
 # their first initialization. By defining a startupProbe, we can allow the
