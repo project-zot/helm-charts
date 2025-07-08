@@ -94,3 +94,13 @@ tests:
       - equal:
           path: spec.volumeClaimTemplates[0].metadata.name
           value: custom-pvc-pvc
+  
+  - it: should have an headless service when enabled
+    set:
+      persistence: true
+      serviceHeadless:
+        enabled: true
+    asserts:
+      - matchRegex:
+          path: spec.serviceName
+          pattern: .*-headless$

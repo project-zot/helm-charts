@@ -1,0 +1,23 @@
+{{- if and .Values.serviceHeadless .Values.serviceHeadless.enabled .Values.persistence -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "zot.fullname" . }}-headless
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "zot.labels" . | nindent 4 }}
+{{- with .Values.serviceHeadless.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - port: {{ .Values.serviceHeadless.port }}
+      targetPort: zot
+      protocol: TCP
+      name: zot
+  selector:
+    {{- include "zot.selectorLabels" . | nindent 4 }}
+{{- end -}}
