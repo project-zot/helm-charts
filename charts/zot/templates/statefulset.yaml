@@ -103,8 +103,8 @@ spec:
           livenessProbe:
             initialDelaySeconds: 5
             httpGet:
-              path: /v2/
-              port: 5000
+              path: /livez
+              port: {{ .Values.httpGet.port }}
               scheme: {{ .Values.httpGet.scheme }}
               {{- if .Values.authHeader }}
               httpHeaders:
@@ -114,8 +114,8 @@ spec:
           readinessProbe:
             initialDelaySeconds: 5
             httpGet:
-              path: /v2/
-              port: 5000
+              path: /readyz
+              port: {{ .Values.httpGet.port }}
               scheme: {{ .Values.httpGet.scheme }}
               {{- if .Values.authHeader }}
               httpHeaders:
@@ -127,8 +127,8 @@ spec:
             periodSeconds: {{ .Values.startupProbe.periodSeconds }}
             failureThreshold: {{ .Values.startupProbe.failureThreshold }}
             httpGet:
-              path: /v2/
-              port: 5000
+              path: /startupz
+              port: {{ .Values.httpGet.port }}
               scheme: {{ .Values.httpGet.scheme }}
               {{- if .Values.authHeader }}
               httpHeaders:
