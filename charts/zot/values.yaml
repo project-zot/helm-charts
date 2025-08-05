@@ -188,6 +188,7 @@ extraContainers: []
 
 # Deployment strategy type
 strategy:
+  # strategy.type should be set to Recreate if local storage is used
   type: RollingUpdate
 #  rollingUpdate:
 #    maxUnavailable: 25%
