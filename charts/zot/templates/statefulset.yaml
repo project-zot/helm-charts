@@ -80,7 +80,7 @@ spec:
             {{- toYaml .Values.env | nindent 12 }}
           ports:
             - name: zot
-              containerPort: 5000
+              containerPort: {{ .Values.httpGet.port }}
               protocol: TCP
           volumeMounts:
             - mountPath: '/var/lib/registry'
@@ -104,7 +104,7 @@ spec:
             initialDelaySeconds: 5
             httpGet:
               path: /livez
-              port: 5000
+              port: {{ .Values.httpGet.port }}
               scheme: {{ .Values.httpGet.scheme }}
               {{- if .Values.authHeader }}
               httpHeaders:
@@ -115,7 +115,7 @@ spec:
             initialDelaySeconds: 5
             httpGet:
               path: /readyz
-              port: 5000
+              port: {{ .Values.httpGet.port }}
               scheme: {{ .Values.httpGet.scheme }}
               {{- if .Values.authHeader }}
               httpHeaders:
@@ -128,7 +128,7 @@ spec:
             failureThreshold: {{ .Values.startupProbe.failureThreshold }}
             httpGet:
               path: /startupz
-              port: 5000
+              port: {{ .Values.httpGet.port }}
               scheme: {{ .Values.httpGet.scheme }}
               {{- if .Values.authHeader }}
               httpHeaders:
