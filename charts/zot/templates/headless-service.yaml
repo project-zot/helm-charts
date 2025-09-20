@@ -18,6 +18,7 @@ spec:
       targetPort: zot
       protocol: TCP
       name: zot
+  publishNotReadyAddresses: true
   selector:
     {{- include "zot.selectorLabels" . | nindent 4 }}
 {{- end -}}
