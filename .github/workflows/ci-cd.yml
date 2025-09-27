@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -21,9 +21,9 @@ jobs:
           git config user.email 'github-actions@users.noreply.github.com'
 
       - name: Install Helm
-        uses: azure/setup-helm@v4.3.0
+        uses: azure/setup-helm@v4.3.1
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.9'
           check-latest: true
@@ -62,7 +62,7 @@ jobs:
 
       - name: Create k8s Kind Cluster
         if: steps.list-changed.outputs.changed == 'true' || github.event_name == 'push'
-        uses: helm/kind-action@v1.4.0
+        uses: helm/kind-action@v1.12.0
 
       - name: Install and test helm charts
         if: steps.list-changed.outputs.changed == 'true' || github.event_name == 'push'
@@ -80,7 +80,7 @@ jobs:
 
       - if: github.event_name == 'push' && github.ref_name == 'main'
         name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.4.0
+        uses: helm/chart-releaser-action@v1.7.0
         with:
           charts_dir: charts
         env:
