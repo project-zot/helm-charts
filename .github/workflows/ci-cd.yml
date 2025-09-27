@@ -36,6 +36,18 @@ jobs:
       - name: Install chart-testing
         uses: helm/chart-testing-action@v2.7.0
 
+      - name: Install helm-docs
+        uses: losisin/helm-docs-github-action@v1.6.2
+        with:
+          git-push: false
+          chart-search-root: charts
+
+      - name: Run Python tests for chart-tracker
+        run: |
+          python3 ./scripts/run_tests.py
+          # cleanup possible remains from tests or helm-docs
+          git checkout -- .
+
       - if: github.event_name == 'pull_request'
         name: Set target branch on pull_request
         run: |
@@ -48,6 +60,38 @@ jobs:
           echo "TARGET_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
           echo "SINCE=${{ github.event.before }}" >> $GITHUB_ENV
 
+      - if: github.event_name == 'push'
+        name: Process chart changes and bump versions if needed
+        run: |
+          # Use Python script to process all changes, detect charts, and bump versions
+          echo "Processing chart changes and documentation updates..."
+
+          # Process all changes and bump versions in one command
+          if python3 ./scripts/chart_tracker.py process --target-branch ${{ env.TARGET_BRANCH }} --since ${{ env.SINCE }}; then
+            echo "Charts were processed and versions bumped"
+
+            # Generate helm-docs for all charts (already done by process command, but ensure it's up to date)
+            echo "Generating helm-docs for all charts..."
+            helm-docs --chart-search-root charts
+
+            # Commit the version changes and documentation updates
+            git add charts/*/Chart.yaml charts/*/README.md
+            if git diff --staged --quiet; then
+              echo "No changes to commit"
+            else
+              echo "Committing changes"
+              git commit -m "chore: auto-bump chart versions and update docs [skip pr]"
+              # HEAD is now at the new commit, so the next steps will run on the new commit
+              # Note the push using the same GITHUB_TOKEN does not trigger workflows
+              git push origin ${{ env.TARGET_BRANCH }}
+            fi
+          else
+            echo "No charts need version bumps"
+          fi
+
+          # Clean up the tracker state file
+          python3 ./scripts/chart_tracker.py cleanup
+
       - name: Run chart-testing list-changed
         id: list-changed
         run: |
@@ -58,7 +102,7 @@ jobs:
 
       - name: Lint helm charts
         if: steps.list-changed.outputs.changed == 'true' || github.event_name == 'push'
-        run: ct lint --config ct.yaml --validate-maintainers=false --target-branch ${{ env.TARGET_BRANCH }} --check-version-increment=${{ github.event_name == 'pull_request' }} --since=${{ env.SINCE }}
+        run: ct lint --config ct.yaml --validate-maintainers=false --target-branch ${{ env.TARGET_BRANCH }} --check-version-increment=false --since=${{ env.SINCE }}
 
       - name: Create k8s Kind Cluster
         if: steps.list-changed.outputs.changed == 'true' || github.event_name == 'push'
