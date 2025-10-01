@@ -148,8 +148,9 @@ class ChartTracker:
 
             try:
                 # Get the git diff for this specific Chart.yaml file
+                # Compare from the 'since' commit to HEAD to see what changed in the current branch
                 result = subprocess.run(
-                    ["git", "diff", f"{target_branch}...HEAD", "--", str(chart_yaml)],
+                    ["git", "diff", f"{since}..HEAD", "--", str(chart_yaml)],
                     capture_output=True,
                     text=True,
                     check=True
