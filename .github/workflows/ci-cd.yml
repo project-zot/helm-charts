@@ -9,6 +9,8 @@ name: chart-releaser
 jobs:
   helm-chart-release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v5
