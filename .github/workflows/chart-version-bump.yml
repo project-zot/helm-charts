@@ -3,7 +3,7 @@ name: chart-version-bump
 on:
   push:
     branches:
-      - chart
+      - main
 
 jobs:
   bump-chart-versions:
