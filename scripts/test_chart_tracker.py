@@ -331,7 +331,7 @@ index 1234567..abcdefg 100644
 
         self.assertEqual(result, [str(test_chart_dir)])
         mock_run.assert_called_with(
-            ["git", "diff", "main...HEAD", "--", str(test_chart_yaml)],
+            ["git", "diff", "HEAD~1..HEAD", "--", str(test_chart_yaml)],
             capture_output=True,
             text=True,
             check=True
