@@ -25,6 +25,7 @@ class TestChartTrackerGitIntegration(unittest.TestCase):
         self._run_git(['init'])
         self._run_git(['config', 'user.name', 'Test User'])
         self._run_git(['config', 'user.email', 'test@example.com'])
+        self._run_git(['config', 'commit.gpgsign', 'false'])
 
         # Create test charts structure
         self.charts_dir = self.repo_path / "charts"
