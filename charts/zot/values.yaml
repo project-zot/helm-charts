@@ -6,7 +6,7 @@ image:
   repository: ghcr.io/project-zot/zot-linux-amd64
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v2.1.8"
+  tag: "v2.1.9"
 # Defaults to the release namespace if not specified
 namespace: ""
 serviceAccount:
