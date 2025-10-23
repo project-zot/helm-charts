@@ -33,6 +33,11 @@ service:
   # Set to a static IP if a static IP is desired, only works when
   # type: ClusterIP
   clusterIP: null
+  # Traffic policy; https://kubernetes.io/docs/reference/networking/virtual-ips/#traffic-policies
+  internalTrafficPolicy: ""
+  externalTrafficPolicy: ""
+  # Traffic distribution preferences; https://kubernetes.io/docs/reference/networking/virtual-ips/#traffic-distribution
+  trafficDistribution: ""
 # Enabling this will publicly expose your zot server
 # Only enable this if you have security enabled on your cluster
 ingress:
