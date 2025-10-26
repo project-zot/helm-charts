@@ -1,6 +1,6 @@
 # zot
 
-![Version: 0.1.87](https://img.shields.io/badge/Version-0.1.87-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v2.1.10](https://img.shields.io/badge/AppVersion-v2.1.10-informational?style=flat-square)
+![Version: 0.1.88](https://img.shields.io/badge/Version-0.1.88-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v2.1.10](https://img.shields.io/badge/AppVersion-v2.1.10-informational?style=flat-square)
 
 A zot registry helm chart for Kubernetes
 
@@ -53,8 +53,11 @@ A zot registry helm chart for Kubernetes
 | secretFiles.htpasswd | string | `"admin:$2y$05$vmiurPmJvHylk78HHFWuruFFVePlit9rZWGA/FbZfTEmNRneGJtha\nuser:$2y$05$L86zqQDfH5y445dcMlwu6uHv.oXFgT6AiJCwpv3ehr7idc0rI3S2G"` |  |
 | service.annotations | object | `{}` |  |
 | service.clusterIP | string | `nil` |  |
+| service.externalTrafficPolicy | string | `""` |  |
+| service.internalTrafficPolicy | string | `""` |  |
 | service.nodePort | string | `nil` |  |
 | service.port | int | `5000` |  |
+| service.trafficDistribution | string | `""` |  |
 | service.type | string | `"NodePort"` |  |
 | serviceAccount.annotations | object | `{}` |  |
 | serviceAccount.create | bool | `true` |  |

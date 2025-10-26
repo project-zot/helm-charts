@@ -6,3 +6,6 @@ tests/ci/*/charts
 
 # Ignore pycache
 **/__pycache__/
+
+# Editors
+.vscode/
