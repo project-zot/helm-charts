@@ -1,6 +1,6 @@
 # zot
 
-![Version: 0.1.88](https://img.shields.io/badge/Version-0.1.88-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v2.1.10](https://img.shields.io/badge/AppVersion-v2.1.10-informational?style=flat-square)
+![Version: 0.1.89](https://img.shields.io/badge/Version-0.1.89-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v2.1.10](https://img.shields.io/badge/AppVersion-v2.1.10-informational?style=flat-square)
 
 A zot registry helm chart for Kubernetes
 
@@ -21,7 +21,7 @@ A zot registry helm chart for Kubernetes
 | httpGet.port | int | `5000` |  |
 | httpGet.scheme | string | `"HTTP"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
-| image.repository | string | `"ghcr.io/project-zot/zot-linux-amd64"` |  |
+| image.repository | string | `"ghcr.io/project-zot/zot"` |  |
 | image.tag | string | `"v2.1.10"` |  |
 | ingress.annotations | object | `{}` |  |
 | ingress.className | string | `"nginx"` |  |
