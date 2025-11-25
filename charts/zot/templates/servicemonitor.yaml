@@ -8,7 +8,11 @@ metadata:
   name: {{ include "zot.fullname" . }}
   namespace: {{ .Values.namespace | default .Release.Namespace }}
   labels:
+    {{- if .Values.metrics.serviceMonitor.labels }}
+    {{- toYaml .Values.metrics.serviceMonitor.labels | nindent 4 }}
+    {{- else }}
     app.kubernetes.io/component: metrics
+    {{- end }}
 spec:
   {{- if .Values.metrics.serviceMonitor.jobLabel }}
   jobLabel: {{ .Values.metrics.serviceMonitor.jobLabel }}

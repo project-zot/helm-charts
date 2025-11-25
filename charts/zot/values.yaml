@@ -224,6 +224,8 @@ metrics:
       secretName: basic-auth
       usernameKey: username
       passwordKey: password
+    # Labels to be set in the metadata
+    labels: { }
 # Test hooks configuration
 test:
   image:

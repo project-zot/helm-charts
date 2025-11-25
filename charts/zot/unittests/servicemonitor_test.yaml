@@ -1,0 +1,24 @@
+suite: test servicemonitor
+templates:
+  - servicemonitor.yaml
+tests:
+  - it: should have the default label
+    set:
+      metrics.enabled: true
+      metrics.serviceMonitor.enabled: true
+    asserts:
+      - equal:
+          path: metadata.labels
+          value:
+            app.kubernetes.io/component: metrics
+  - it: should have the overwritten label
+    set:
+      metrics.enabled: true
+      metrics.serviceMonitor.enabled: true
+      metrics.serviceMonitor.labels:
+        test: test
+    asserts:
+      - equal:
+          path: metadata.labels
+          value:
+            test: test
