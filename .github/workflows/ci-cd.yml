@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -21,9 +21,9 @@ jobs:
           git config user.email 'github-actions@users.noreply.github.com'
 
       - name: Install Helm
-        uses: azure/setup-helm@v4.3.0
+        uses: azure/setup-helm@v4.3.1
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.9'
           check-latest: true
@@ -35,6 +35,18 @@ jobs:
 
       - name: Install chart-testing
         uses: helm/chart-testing-action@v2.7.0
+
+      - name: Install helm-docs
+        uses: losisin/helm-docs-github-action@v1.6.2
+        with:
+          git-push: false
+          chart-search-root: charts
+
+      - name: Run Python tests for chart-tracker
+        run: |
+          python3 ./scripts/run_tests.py
+          # cleanup possible remains from tests or helm-docs
+          git checkout -- .
 
       - if: github.event_name == 'pull_request'
         name: Set target branch on pull_request
@@ -58,11 +70,11 @@ jobs:
 
       - name: Lint helm charts
         if: steps.list-changed.outputs.changed == 'true' || github.event_name == 'push'
-        run: ct lint --config ct.yaml --validate-maintainers=false --target-branch ${{ env.TARGET_BRANCH }} --check-version-increment=${{ github.event_name == 'pull_request' }} --since=${{ env.SINCE }}
+        run: ct lint --config ct.yaml --validate-maintainers=false --target-branch ${{ env.TARGET_BRANCH }} --check-version-increment=false --since=${{ env.SINCE }}
 
       - name: Create k8s Kind Cluster
         if: steps.list-changed.outputs.changed == 'true' || github.event_name == 'push'
-        uses: helm/kind-action@v1.4.0
+        uses: helm/kind-action@v1.12.0
 
       - name: Install and test helm charts
         if: steps.list-changed.outputs.changed == 'true' || github.event_name == 'push'
@@ -80,7 +92,7 @@ jobs:
 
       - if: github.event_name == 'push' && github.ref_name == 'main'
         name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.4.0
+        uses: helm/chart-releaser-action@v1.7.0
         with:
           charts_dir: charts
         env:

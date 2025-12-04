@@ -1,0 +1,69 @@
+name: chart-version-bump
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  bump-chart-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.HELM_PUSH_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name 'github-actions'
+          git config user.email 'github-actions@users.noreply.github.com'
+
+      - name: Install helm-docs
+        uses: losisin/helm-docs-github-action@v1.6.2
+        with:
+          git-push: false
+          chart-search-root: charts
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.9'
+          check-latest: true
+
+      - name: Run Python tests for chart-tracker
+        run: |
+          pip install PyYAML
+          python3 ./scripts/run_tests.py
+          git checkout -- .
+
+      - name: Process chart changes and bump versions
+        run: |
+          # Use Python script to process all changes, detect charts, and bump versions
+          echo "Processing chart changes and documentation updates..."
+
+          # Process all changes and bump versions in one command
+          if python3 ./scripts/chart_tracker.py process --target-branch ${{ github.ref_name }} --since ${{ github.event.before }}; then
+            echo "Charts were processed and versions bumped"
+
+            # Generate helm-docs for all charts (already done by process command, but ensure it's up to date)
+            echo "Generating helm-docs for all charts..."
+            helm-docs --chart-search-root charts
+
+            # Commit the version changes and documentation updates
+            git add charts/*/Chart.yaml charts/*/README.md
+            if git diff --staged --quiet; then
+              echo "No changes to commit"
+            else
+              echo "Committing changes"
+              git diff --cached
+              git commit -m "chore: auto-bump chart versions and update docs [skip pr]"
+              sleep 120
+              git push origin ${{ github.ref_name }}
+            fi
+          else
+            echo "No charts need version bumps"
+          fi
+
+          # Clean up the tracker state file
+          python3 ./scripts/chart_tracker.py cleanup
