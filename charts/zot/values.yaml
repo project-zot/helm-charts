@@ -146,6 +146,9 @@ secretFiles:
 # from running `echo -n "foo:var" | base64`
 # authHeader: "Zm9vOmJhcg=="
 
+imagePullSecret:
+  enable: true
+
 # If persistence is 'true' the service uses a persistentVolumeClaim to mount a
 # volume for zot on '/var/lib/registry'; by default the pvc used is named
 # '$CHART_RELEASE-pvc', but the name can be changed below
