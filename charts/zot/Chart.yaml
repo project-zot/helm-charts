@@ -3,4 +3,4 @@ appVersion: v2.1.14
 description: A zot registry helm chart for Kubernetes
 name: zot
 type: application
-version: 0.1.96
+version: 0.1.97
