@@ -93,9 +93,23 @@ jobs:
           ct install --upgrade --target-branch ${{ env.TARGET_BRANCH }} --debug
 
       - if: github.event_name == 'push' && github.ref_name == 'main'
+        name: Prepare GPG key for signing
+        run: |
+          if [ -n "${{ secrets.GPG_PRIVATE_KEY }}" ]; then
+            echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --dearmor --output keyring.gpg
+            echo "${{ secrets.GPG_PASSPHRASE }}" > passphrase-file.txt
+          else
+            echo "Warning: GPG_PRIVATE_KEY not set, signing will be skipped"
+          fi
+
+      - if: github.event_name == 'push' && github.ref_name == 'main'
         name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
         with:
           charts_dir: charts
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          CR_KEY: "${{ secrets.GPG_KEY_NAME }}"
+          CR_KEYRING: keyring.gpg
+          CR_PASSPHRASE_FILE: passphrase-file.txt
+          CR_SIGN: true
