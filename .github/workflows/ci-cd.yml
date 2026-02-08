@@ -94,13 +94,34 @@ jobs:
 
       - if: github.event_name == 'push' && github.ref_name == 'main'
         name: Prepare GPG key for signing
+        env:
+          GPG_PRIVATE_KEY: "${{ secrets.GPG_PRIVATE_KEY }}"
+          GPG_PASSPHRASE: "${{ secrets.GPG_PASSPHRASE }}"
         run: |
-          if [ -n "${{ secrets.GPG_PRIVATE_KEY }}" ]; then
-            echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --dearmor --output keyring.gpg
-            echo "${{ secrets.GPG_PASSPHRASE }}" > passphrase-file.txt
-          else
+          if [ -z "$GPG_PRIVATE_KEY" ]; then
             echo "Warning: GPG_PRIVATE_KEY not set, signing will be skipped"
+            exit 0
           fi
+
+          # Create GPG directory
+          mkdir -p ~/.gnupg
+          chmod 700 ~/.gnupg
+
+          # Import the ASCII-armored private key
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --yes --import
+
+          # Export in legacy binary format (required by Helm/chart-releaser)
+          gpg --export-secret-keys > keyring.gpg
+          chmod 600 keyring.gpg
+
+          # Save passphrase if provided
+          if [ -n "$GPG_PASSPHRASE" ]; then
+            echo "$GPG_PASSPHRASE" > passphrase-file.txt
+            chmod 600 passphrase-file.txt
+          fi
+
+          # Verify the key was imported correctly
+          gpg --list-secret-keys --keyid-format LONG
 
       - if: github.event_name == 'push' && github.ref_name == 'main'
         name: Run chart-releaser
