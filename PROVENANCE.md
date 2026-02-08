@@ -16,20 +16,25 @@ Here's a complete workflow for downloading and verifying a chart:
 # 1. Import the public key (only needed once)
 curl -sL https://raw.githubusercontent.com/project-zot/helm-charts/main/signing-key.pub | gpg --import
 
-# 2. Add the repository
+# 2. Create legacy keyring format (required by Helm)
+# Helm requires the legacy GPG keyring format, not the modern format
+mkdir -p ~/.gnupg
+gpg --export >> ~/.gnupg/pubring.gpg
+
+# 3. Add the repository
 helm repo add zot https://zotregistry.dev/helm-charts
 helm repo update
 
-# 3. Pull chart with provenance (downloads both .tgz and .tgz.prov files)
+# 4. Pull chart with provenance (downloads both .tgz and .tgz.prov files)
 helm pull --prov zot/zot
 
-# 4. Verify the signature
+# 5. Verify the signature
 helm verify zot-*.tgz
 # If verification succeeds, you'll see:
 # Signed by: <signer information>
 # Chart Hash: <hash>
 
-# 5. Install the verified chart
+# 6. Install the verified chart
 helm install my-zot zot-*.tgz
 ```
 
@@ -73,9 +78,15 @@ Try pulling a newer chart version or ensure you're using the `--prov` flag.
 
 ### "Error: failed to load keyring"
 
-The public key hasn't been imported. Run:
+This error means Helm can't find the keyring in the legacy format. After importing the key, create the legacy keyring:
+
 ```bash
+# Import the key
 curl -sL https://raw.githubusercontent.com/project-zot/helm-charts/main/signing-key.pub | gpg --import
+
+# Create legacy keyring format (required by Helm)
+mkdir -p ~/.gnupg
+gpg --export >> ~/.gnupg/pubring.gpg
 ```
 
 ### "Error: signature is invalid"
