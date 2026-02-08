@@ -110,18 +110,21 @@ jobs:
           # Import the ASCII-armored private key
           echo "$GPG_PRIVATE_KEY" | gpg --batch --yes --import
 
-          # Export in legacy binary format (required by Helm/chart-releaser)
-          gpg --export-secret-keys > keyring.gpg
-          chmod 600 keyring.gpg
-
-          # Save passphrase if provided
-          if [ -n "$GPG_PASSPHRASE" ]; then
-            echo "$GPG_PASSPHRASE" > passphrase-file.txt
-            chmod 600 passphrase-file.txt
+          if [ -z "$GPG_PASSPHRASE" ]; then
+            echo "Error: GPG_PASSPHRASE is required but not set"
+            exit 1
           fi
 
-          # Verify the key was imported correctly
+          # Export in legacy binary format (required by Helm/chart-releaser)
+          # Use pinentry-mode loopback to avoid GPG agent interaction
+          echo "$GPG_PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --export-secret-keys > keyring.gpg
+          echo "$GPG_PASSPHRASE" > passphrase-file.txt
+          chmod 600 passphrase-file.txt
+          chmod 600 keyring.gpg
+
+          # Verify the key was imported and exported correctly
           gpg --list-secret-keys --keyid-format LONG
+          ls -lh keyring.gpg
 
       - if: github.event_name == 'push' && github.ref_name == 'main'
         name: Run chart-releaser
