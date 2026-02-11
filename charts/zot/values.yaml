@@ -59,6 +59,45 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+# HTTPRoute for Gateway API (alternative to Ingress)
+# Gateway API is the successor to Ingress API with improved design and capabilities
+# Only enable this if you have Gateway API CRDs installed and a Gateway controller
+httproute:
+  enabled: false
+  # Annotations to add to the HTTPRoute resource
+  annotations: {}
+  # Labels to add to the HTTPRoute resource
+  labels: {}
+  # Gateway references that the HTTPRoute attaches to
+  # At least one parentRef is required when HTTPRoute is enabled
+  parentRefs: []
+  # Example parentRefs configuration:
+  # - name: my-gateway
+  #   namespace: gateway-system
+  #   sectionName: https  # Optional: specific listener on the gateway
+  # Hostnames to match for this HTTPRoute
+  hostnames: []
+  # Example:
+  # - "zot.example.com"
+  # - "registry.example.com"
+  # Path matching type (PathPrefix, Exact, or RegularExpression)
+  pathType: PathPrefix
+  # Path to match (used when rules are not specified)
+  path: /
+  # Advanced routing rules (optional)
+  # If not specified, a default rule matching the path will be created
+  rules: []
+  # Example rules configuration:
+  # - matches:
+  #   - path:
+  #       type: PathPrefix
+  #       value: /v2/
+  #   filters:
+  #   - type: RequestHeaderModifier
+  #     requestHeaderModifier:
+  #       add:
+  #       - name: X-Custom-Header
+  #         value: custom-value
 # By default, Kubernetes HTTP probes use HTTP 'scheme'. So if TLS is enabled
 # in configuration, to prevent failures, the scheme must be set to 'HTTPS'.
 httpGet:
