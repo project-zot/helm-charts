@@ -1,0 +1,128 @@
+suite: test httproute
+templates:
+  - httproute.yaml
+tests:
+  - it: should be empty if httproute is not enabled
+    asserts:
+      - hasDocuments:
+          count: 0
+  - it: should have apiVersion gateway.networking.k8s.io/v1
+    set:
+      httproute.enabled: true
+      httproute.parentRefs:
+        - name: test-gateway
+      httproute.hostnames:
+        - zot.example.com
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: HTTPRoute
+      - isAPIVersion:
+          of: gateway.networking.k8s.io/v1
+  - it: should have correct parentRefs with defaults
+    set:
+      httproute.enabled: true
+      httproute.parentRefs:
+        - name: test-gateway
+      httproute.hostnames:
+        - zot.example.com
+    asserts:
+      - equal:
+          path: spec.parentRefs[0].name
+          value: test-gateway
+      - equal:
+          path: spec.parentRefs[0].group
+          value: gateway.networking.k8s.io
+      - equal:
+          path: spec.parentRefs[0].kind
+          value: Gateway
+  - it: should have correct parentRefs with custom namespace and sectionName
+    set:
+      httproute.enabled: true
+      httproute.parentRefs:
+        - name: test-gateway
+          namespace: gateway-system
+          sectionName: https
+      httproute.hostnames:
+        - zot.example.com
+    asserts:
+      - equal:
+          path: spec.parentRefs[0].name
+          value: test-gateway
+      - equal:
+          path: spec.parentRefs[0].namespace
+          value: gateway-system
+      - equal:
+          path: spec.parentRefs[0].sectionName
+          value: https
+  - it: should have correct hostnames
+    set:
+      httproute.enabled: true
+      httproute.parentRefs:
+        - name: test-gateway
+      httproute.hostnames:
+        - zot.example.com
+        - registry.example.com
+    asserts:
+      - equal:
+          path: spec.hostnames[0]
+          value: zot.example.com
+      - equal:
+          path: spec.hostnames[1]
+          value: registry.example.com
+  - it: should have default path rule when rules are not specified
+    set:
+      httproute.enabled: true
+      httproute.parentRefs:
+        - name: test-gateway
+      httproute.hostnames:
+        - zot.example.com
+    asserts:
+      - equal:
+          path: spec.rules[0].matches[0].path.type
+          value: PathPrefix
+      - equal:
+          path: spec.rules[0].matches[0].path.value
+          value: /
+      - equal:
+          path: spec.rules[0].backendRefs[0].name
+          value: RELEASE-NAME-zot
+      - equal:
+          path: spec.rules[0].backendRefs[0].port
+          value: 5000
+  - it: should use custom pathType and path when specified
+    set:
+      httproute.enabled: true
+      httproute.parentRefs:
+        - name: test-gateway
+      httproute.hostnames:
+        - zot.example.com
+      httproute.pathType: Exact
+      httproute.path: /v2/
+    asserts:
+      - equal:
+          path: spec.rules[0].matches[0].path.type
+          value: Exact
+      - equal:
+          path: spec.rules[0].matches[0].path.value
+          value: /v2/
+  - it: should use custom rules when specified
+    set:
+      httproute.enabled: true
+      httproute.parentRefs:
+        - name: test-gateway
+      httproute.hostnames:
+        - zot.example.com
+      httproute.rules:
+        - matches:
+          - path:
+              type: PathPrefix
+              value: /v2/
+    asserts:
+      - equal:
+          path: spec.rules[0].matches[0].path.type
+          value: PathPrefix
+      - equal:
+          path: spec.rules[0].matches[0].path.value
+          value: /v2/
