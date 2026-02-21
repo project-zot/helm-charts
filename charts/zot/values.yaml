@@ -59,33 +59,30 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
-# HTTPRoute for Gateway API (alternative to Ingress)
-# Gateway API is the successor to Ingress API with improved design and capabilities
-# Only enable this if you have Gateway API CRDs installed and a Gateway controller
+# -- HTTPRoute configuration for Gateway API (alternative to Ingress). Only enable this if you have Gateway API CRDs installed and a Gateway controller.
 httproute:
+  # -- Enable HTTPRoute resource creation instead of (or in addition to) Ingress.
   enabled: false
-  # Annotations to add to the HTTPRoute resource
+  # -- Annotations to add to the HTTPRoute resource.
   annotations: {}
-  # Labels to add to the HTTPRoute resource
+  # -- Labels to add to the HTTPRoute resource.
   labels: {}
-  # Gateway references that the HTTPRoute attaches to
-  # At least one parentRef is required when HTTPRoute is enabled
+  # -- Gateway references that the HTTPRoute attaches to. At least one parentRef is required when HTTPRoute is enabled.
   parentRefs: []
   # Example parentRefs configuration:
   # - name: my-gateway
   #   namespace: gateway-system
   #   sectionName: https  # Optional: specific listener on the gateway
-  # Hostnames to match for this HTTPRoute
+  # -- Hostnames to match for this HTTPRoute.
   hostnames: []
   # Example:
   # - "zot.example.com"
   # - "registry.example.com"
-  # Path matching type (PathPrefix, Exact, or RegularExpression)
+  # -- Path matching type (PathPrefix, Exact, or RegularExpression).
   pathType: PathPrefix
-  # Path to match (used when rules are not specified)
+  # -- Path to match when custom rules are not specified.
   path: /
-  # Advanced routing rules (optional)
-  # If not specified, a default rule matching the path will be created
+  # -- Advanced routing rules (optional). If not specified, a default rule matching the path will be created.
   rules: []
   # Example rules configuration:
   # - matches:
