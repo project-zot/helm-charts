@@ -7,8 +7,7 @@ metadata:
   name: {{ $fullName }}
   namespace: {{ .Values.namespace | default .Release.Namespace }}
   labels:
-    app: {{ .Chart.Name }}
-    release: {{ .Release.Name }}
+    {{- include "zot.labels" . | nindent 4 }}
     {{- with .Values.httproute.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
