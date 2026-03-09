@@ -152,12 +152,17 @@ secretFiles:
 persistence: false
 # PVC data, only used if persistence is 'true'
 pvc:
-  # Make the chart create the PVC, this option is used with storageClasses that
-  # can create volumes dynamically, if that is not the case is better to do it
-  # manually and set create to false
-  create: false
-  # Name of the PVC to use or create if persistence is enabled, if not set the
-  # value '$CHART_RELEASE-pvc' is used
+  # When true, the StatefulSet uses volumeClaimTemplates to dynamically provision
+  # PVCs. Kubernetes names the resulting PVCs as:
+  #   <name>-<statefulset>-<ordinal>  (e.g. my-release-pvc-my-release-0)
+  # When false, an existing PVC is mounted via volumes instead — set 'name' to the
+  # exact name of the pre-existing PVC. Note: all replicas will share that single
+  # PVC, so the access mode must support it (e.g. ReadWriteMany).
+  create: true
+  # When create is true, this is the volumeClaimTemplate name prefix (Kubernetes
+  # appends '-<statefulset>-<ordinal>' to form the actual PVC name).
+  # When create is false, this is the literal name of a pre-existing PVC.
+  # Defaults to '$CHART_RELEASE-pvc' if not set.
   name: null
   # Volume access mode, if using more than one replica we need
   accessModes: ["ReadWriteOnce"]
