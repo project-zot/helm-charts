@@ -1,6 +1,8 @@
 suite: statefulset tests
 templates:
   - statefulset.yaml
+release:
+  name: my-release
 tests:
   - it: should not create statefulset when persistence is disabled
     set:
@@ -84,17 +86,74 @@ tests:
       - isNull:
           path: spec.volumeClaimTemplates[0].spec.storageClassName
 
-  - it: should use custom PVC name when specified
+  - it: uses <release>-pvc as the VCT name and volumeMount name by default
     set:
       persistence: true
-      pvc:
-        name: custom-pvc
-        storage: 10Gi
+      pvc.create: true
     asserts:
       - equal:
           path: spec.volumeClaimTemplates[0].metadata.name
-          value: custom-pvc-pvc
-  
+          value: my-release-pvc
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            mountPath: /var/lib/registry
+            name: my-release-pvc
+
+  - it: uses pvc.name verbatim as the VCT name and volumeMount name
+    set:
+      persistence: true
+      pvc.create: true
+      pvc.name: custom-pvc
+    asserts:
+      - equal:
+          path: spec.volumeClaimTemplates[0].metadata.name
+          value: custom-pvc
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            mountPath: /var/lib/registry
+            name: custom-pvc
+
+  - it: has no volumeClaimTemplates and mounts a pre-existing PVC when create is false
+    set:
+      persistence: true
+      pvc.create: false
+      pvc.name: my-existing-pvc
+    asserts:
+      - isNull:
+          path: spec.volumeClaimTemplates
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: my-existing-pvc
+            persistentVolumeClaim:
+              claimName: my-existing-pvc
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            mountPath: /var/lib/registry
+            name: my-existing-pvc
+
+  - it: defaults PVC name to <release>-pvc when create is false and name is null
+    set:
+      persistence: true
+      pvc.create: false
+    asserts:
+      - isNull:
+          path: spec.volumeClaimTemplates
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: my-release-pvc
+            persistentVolumeClaim:
+              claimName: my-release-pvc
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            mountPath: /var/lib/registry
+            name: my-release-pvc
+
   - it: should have an headless service when enabled
     set:
       persistence: true
