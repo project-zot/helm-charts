@@ -154,14 +154,16 @@ persistence: false
 pvc:
   # When true, the StatefulSet uses volumeClaimTemplates to dynamically provision
   # PVCs. Kubernetes names the resulting PVCs as:
-  #   <name>-<statefulset>-<ordinal>  (e.g. my-release-pvc-my-release-0)
+  #   <vctName>-<fullname>-<ordinal>
+  # where <fullname> is the StatefulSet name (typically <release>-zot).
+  # For example, with release "my-release" and default pvc.name:
+  #   my-release-pvc-my-release-zot-0
   # When false, an existing PVC is mounted via volumes instead — set 'name' to the
   # exact name of the pre-existing PVC. Note: all replicas will share that single
   # PVC, so the access mode must support it (e.g. ReadWriteMany).
   create: true
-  # When create is true, this is the volumeClaimTemplate name prefix (Kubernetes
-  # appends '-<statefulset>-<ordinal>' to form the actual PVC name).
-  # When create is false, this is the literal name of a pre-existing PVC.
+  # When create is true, this is the volumeClaimTemplate name (the <vctName> part
+  # above). When create is false, this is the literal name of a pre-existing PVC.
   # Defaults to '$CHART_RELEASE-pvc' if not set.
   name: null
   # Volume access mode, if using more than one replica we need
