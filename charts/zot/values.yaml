@@ -83,6 +83,7 @@ httproute:
   # -- Path to match when custom rules are not specified.
   path: /
   # -- Advanced routing rules (optional). If not specified, a default rule matching the path will be created.
+  # Note: Any backendRefs in custom rules will be ignored and the zot service will always be used.
   rules: []
   # Example rules configuration:
   # - matches:

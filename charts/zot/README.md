@@ -20,6 +20,15 @@ A zot registry helm chart for Kubernetes
 | extraVolumes | list | `[]` |  |
 | httpGet.port | int | `5000` |  |
 | httpGet.scheme | string | `"HTTP"` |  |
+| httproute | object | `{"annotations":{},"enabled":false,"hostnames":[],"labels":{},"parentRefs":[],"path":"/","pathType":"PathPrefix","rules":[]}` | HTTPRoute configuration for Gateway API (alternative to Ingress). Only enable this if you have Gateway API CRDs installed and a Gateway controller. |
+| httproute.annotations | object | `{}` | Annotations to add to the HTTPRoute resource. |
+| httproute.enabled | bool | `false` | Enable HTTPRoute resource creation instead of (or in addition to) Ingress. |
+| httproute.hostnames | list | `[]` | Hostnames to match for this HTTPRoute. |
+| httproute.labels | object | `{}` | Labels to add to the HTTPRoute resource. |
+| httproute.parentRefs | list | `[]` | Gateway references that the HTTPRoute attaches to. At least one parentRef is required when HTTPRoute is enabled. |
+| httproute.path | string | `"/"` | Path to match when custom rules are not specified. |
+| httproute.pathType | string | `"PathPrefix"` | Path matching type (PathPrefix, Exact, or RegularExpression). |
+| httproute.rules | list | `[]` | Advanced routing rules (optional). If not specified, a default rule matching the path will be created. Note: Any backendRefs in custom rules will be ignored and the zot service will always be used. |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"ghcr.io/project-zot/zot"` |  |
 | image.tag | string | `"v2.1.14"` |  |

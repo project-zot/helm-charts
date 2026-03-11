@@ -126,3 +126,52 @@ tests:
       - equal:
           path: spec.rules[0].matches[0].path.value
           value: /v2/
+  - it: should include labels and annotations when specified
+    set:
+      httproute.enabled: true
+      httproute.parentRefs:
+        - name: test-gateway
+      httproute.labels:
+        custom-label: label-value
+      httproute.annotations:
+        custom-annotation: annotation-value
+    asserts:
+      - equal:
+          path: metadata.labels.custom-label
+          value: label-value
+      - equal:
+          path: metadata.annotations.custom-annotation
+          value: annotation-value
+  - it: should include rule filters when specified
+    set:
+      httproute.enabled: true
+      httproute.parentRefs:
+        - name: test-gateway
+      httproute.rules:
+        - matches:
+          - path:
+              type: PathPrefix
+              value: /v2/
+          filters:
+          - type: RequestHeaderModifier
+            requestHeaderModifier:
+              add:
+              - name: X-Custom-Header
+                value: custom-value
+    asserts:
+      - equal:
+          path: spec.rules[0].filters[0].type
+          value: RequestHeaderModifier
+      - equal:
+          path: spec.rules[0].filters[0].requestHeaderModifier.add[0].name
+          value: X-Custom-Header
+      - equal:
+          path: spec.rules[0].filters[0].requestHeaderModifier.add[0].value
+          value: custom-value
+  - it: should fail if parentRefs is empty
+    set:
+      httproute.enabled: true
+      httproute.parentRefs: []
+    asserts:
+      - failedTemplate:
+          errorMessage: "At least one parentRef is required when HTTPRoute is enabled."

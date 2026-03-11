@@ -16,52 +16,48 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- with .Values.httproute.parentRefs }}
+  {{- if not .Values.httproute.parentRefs }}
+  {{- fail "At least one parentRef is required when HTTPRoute is enabled." }}
+  {{- end }}
   parentRefs:
-    {{- range . }}
-    - group: {{ .group | default "gateway.networking.k8s.io" }}
-      kind: {{ .kind | default "Gateway" }}
-      name: {{ .name }}
-      {{- with .namespace }}
-      namespace: {{ . }}
-      {{- end }}
-      {{- with .sectionName }}
-      sectionName: {{ . }}
-      {{- end }}
+  {{- range .Values.httproute.parentRefs }}
+  - group: {{ .group | default "gateway.networking.k8s.io" }}
+    kind: {{ .kind | default "Gateway" }}
+    name: {{ .name }}
+    {{- with .namespace }}
+    namespace: {{ . }}
+    {{- end }}
+    {{- with .sectionName }}
+    sectionName: {{ . }}
     {{- end }}
   {{- end }}
   {{- with .Values.httproute.hostnames }}
   hostnames:
-    {{- range . }}
-    - {{ . | quote }}
-    {{- end }}
+  {{- range . }}
+  - {{ . | quote }}
+  {{- end }}
   {{- end }}
   rules:
-    {{- if .Values.httproute.rules }}
-    {{- range .Values.httproute.rules }}
-    - {{- with .matches }}
-      matches:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .filters }}
-      filters:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      backendRefs:
-        - group: ''
-          kind: Service
-          name: {{ $fullName }}
-          port: {{ $httpPort }}
-    {{- end }}
-    {{- else }}
-    - matches:
-      - path:
-          type: {{ .Values.httproute.pathType | default "PathPrefix" }}
-          value: {{ .Values.httproute.path | default "/" }}
-      backendRefs:
-        - group: ''
-          kind: Service
-          name: {{ $fullName }}
-          port: {{ $httpPort }}
-    {{- end }}
+  {{- if .Values.httproute.rules }}
+  {{- range .Values.httproute.rules }}
+  {{- with .matches }}
+  - matches:
+      {{- toYaml . | nindent 8 }}
+  {{- end }}
+  {{- with .filters }}
+    filters:
+      {{- toYaml . | nindent 8 }}
+  {{- end }}
+  {{- end }}
+  {{- else }}
+  - matches:
+    - path:
+        type: {{ .Values.httproute.pathType | default "PathPrefix" }}
+        value: {{ .Values.httproute.path | default "/" }}
+  {{- end }}
+    backendRefs:
+    - group: ''
+      kind: Service
+      name: {{ $fullName }}
+      port: {{ $httpPort }}
 {{- end }}
