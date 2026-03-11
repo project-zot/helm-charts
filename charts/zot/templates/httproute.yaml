@@ -1,0 +1,63 @@
+{{- if .Values.httproute.enabled -}}
+{{- $fullName := include "zot.fullname" . -}}
+{{- $httpPort := .Values.service.port -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "zot.labels" . | nindent 4 }}
+    {{- with .Values.httproute.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.httproute.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if not .Values.httproute.parentRefs }}
+  {{- fail "At least one parentRef is required when HTTPRoute is enabled." }}
+  {{- end }}
+  parentRefs:
+  {{- range .Values.httproute.parentRefs }}
+  - group: {{ .group | default "gateway.networking.k8s.io" }}
+    kind: {{ .kind | default "Gateway" }}
+    name: {{ .name }}
+    {{- with .namespace }}
+    namespace: {{ . }}
+    {{- end }}
+    {{- with .sectionName }}
+    sectionName: {{ . }}
+    {{- end }}
+  {{- end }}
+  {{- with .Values.httproute.hostnames }}
+  hostnames:
+  {{- range . }}
+  - {{ . | quote }}
+  {{- end }}
+  {{- end }}
+  rules:
+  {{- if .Values.httproute.rules }}
+  {{- range .Values.httproute.rules }}
+  {{- with .matches }}
+  - matches:
+      {{- toYaml . | nindent 8 }}
+  {{- end }}
+  {{- with .filters }}
+    filters:
+      {{- toYaml . | nindent 8 }}
+  {{- end }}
+  {{- end }}
+  {{- else }}
+  - matches:
+    - path:
+        type: {{ .Values.httproute.pathType | default "PathPrefix" }}
+        value: {{ .Values.httproute.path | default "/" }}
+  {{- end }}
+    backendRefs:
+    - group: ''
+      kind: Service
+      name: {{ $fullName }}
+      port: {{ $httpPort }}
+{{- end }}
