@@ -1,0 +1,230 @@
+suite: test httproute
+templates:
+  - httproute.yaml
+tests:
+  - it: should be empty if httproute is not enabled
+    asserts:
+      - hasDocuments:
+          count: 0
+  - it: should have apiVersion gateway.networking.k8s.io/v1
+    set:
+      httproute.enabled: true
+      httproute.parentRefs:
+        - name: test-gateway
+      httproute.hostnames:
+        - zot.example.com
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: HTTPRoute
+      - isAPIVersion:
+          of: gateway.networking.k8s.io/v1
+  - it: should have correct parentRefs with defaults
+    set:
+      httproute.enabled: true
+      httproute.parentRefs:
+        - name: test-gateway
+      httproute.hostnames:
+        - zot.example.com
+    asserts:
+      - equal:
+          path: spec.parentRefs[0].name
+          value: test-gateway
+      - equal:
+          path: spec.parentRefs[0].group
+          value: gateway.networking.k8s.io
+      - equal:
+          path: spec.parentRefs[0].kind
+          value: Gateway
+  - it: should have correct parentRefs with custom namespace and sectionName
+    set:
+      httproute.enabled: true
+      httproute.parentRefs:
+        - name: test-gateway
+          namespace: gateway-system
+          sectionName: https
+      httproute.hostnames:
+        - zot.example.com
+    asserts:
+      - equal:
+          path: spec.parentRefs[0].name
+          value: test-gateway
+      - equal:
+          path: spec.parentRefs[0].namespace
+          value: gateway-system
+      - equal:
+          path: spec.parentRefs[0].sectionName
+          value: https
+  - it: should have correct hostnames
+    set:
+      httproute.enabled: true
+      httproute.parentRefs:
+        - name: test-gateway
+      httproute.hostnames:
+        - zot.example.com
+        - registry.example.com
+    asserts:
+      - equal:
+          path: spec.hostnames[0]
+          value: zot.example.com
+      - equal:
+          path: spec.hostnames[1]
+          value: registry.example.com
+  - it: should have default path rule when rules are not specified
+    set:
+      httproute.enabled: true
+      httproute.parentRefs:
+        - name: test-gateway
+      httproute.hostnames:
+        - zot.example.com
+    asserts:
+      - equal:
+          path: spec.rules[0].matches[0].path.type
+          value: PathPrefix
+      - equal:
+          path: spec.rules[0].matches[0].path.value
+          value: /
+      - equal:
+          path: spec.rules[0].backendRefs[0].name
+          value: RELEASE-NAME-zot
+      - equal:
+          path: spec.rules[0].backendRefs[0].port
+          value: 5000
+  - it: should use custom pathType and path when specified
+    set:
+      httproute.enabled: true
+      httproute.parentRefs:
+        - name: test-gateway
+      httproute.hostnames:
+        - zot.example.com
+      httproute.pathType: Exact
+      httproute.path: /v2/
+    asserts:
+      - equal:
+          path: spec.rules[0].matches[0].path.type
+          value: Exact
+      - equal:
+          path: spec.rules[0].matches[0].path.value
+          value: /v2/
+  - it: should use custom rules when specified
+    set:
+      httproute.enabled: true
+      httproute.parentRefs:
+        - name: test-gateway
+      httproute.hostnames:
+        - zot.example.com
+      httproute.rules:
+        - matches:
+          - path:
+              type: PathPrefix
+              value: /v2/
+    asserts:
+      - equal:
+          path: spec.rules[0].matches[0].path.type
+          value: PathPrefix
+      - equal:
+          path: spec.rules[0].matches[0].path.value
+          value: /v2/
+  - it: should include labels and annotations when specified
+    set:
+      httproute.enabled: true
+      httproute.parentRefs:
+        - name: test-gateway
+      httproute.labels:
+        custom-label: label-value
+      httproute.annotations:
+        custom-annotation: annotation-value
+    asserts:
+      - equal:
+          path: metadata.labels.custom-label
+          value: label-value
+      - equal:
+          path: metadata.annotations.custom-annotation
+          value: annotation-value
+  - it: should include rule filters when specified
+    set:
+      httproute.enabled: true
+      httproute.parentRefs:
+        - name: test-gateway
+      httproute.rules:
+        - matches:
+          - path:
+              type: PathPrefix
+              value: /v2/
+          filters:
+          - type: RequestHeaderModifier
+            requestHeaderModifier:
+              add:
+              - name: X-Custom-Header
+                value: custom-value
+    asserts:
+      - equal:
+          path: spec.rules[0].filters[0].type
+          value: RequestHeaderModifier
+      - equal:
+          path: spec.rules[0].filters[0].requestHeaderModifier.add[0].name
+          value: X-Custom-Header
+      - equal:
+          path: spec.rules[0].filters[0].requestHeaderModifier.add[0].value
+          value: custom-value
+  - it: should support multiple custom rules
+    set:
+      httproute.enabled: true
+      httproute.parentRefs:
+        - name: test-gateway
+      httproute.hostnames:
+        - zot.example.com
+      httproute.rules:
+        - matches:
+          - path:
+              type: PathPrefix
+              value: /v2/
+        - matches:
+          - path:
+              type: Exact
+              value: /healthz
+    asserts:
+      - equal:
+          path: spec.rules[0].matches[0].path.type
+          value: PathPrefix
+      - equal:
+          path: spec.rules[0].matches[0].path.value
+          value: /v2/
+      - equal:
+          path: spec.rules[1].matches[0].path.type
+          value: Exact
+      - equal:
+          path: spec.rules[1].matches[0].path.value
+          value: /healthz
+  - it: should support rule filters without matches
+    set:
+      httproute.enabled: true
+      httproute.parentRefs:
+        - name: test-gateway
+      httproute.hostnames:
+        - zot.example.com
+      httproute.rules:
+        - filters:
+          - type: RequestHeaderModifier
+            requestHeaderModifier:
+              add:
+              - name: X-Filter-Only
+                value: filter-only-value
+    asserts:
+      - equal:
+          path: spec.rules[0].filters[0].type
+          value: RequestHeaderModifier
+      - equal:
+          path: spec.rules[0].filters[0].requestHeaderModifier.add[0].name
+          value: X-Filter-Only
+      - equal:
+          path: spec.rules[0].filters[0].requestHeaderModifier.add[0].value
+          value: filter-only-value
+  - it: should fail if parentRefs is empty
+    set:
+      httproute.enabled: true
+      httproute.parentRefs: []
+    asserts:
+      - failedTemplate:
+          errorMessage: "At least one parentRef is required when HTTPRoute is enabled."
