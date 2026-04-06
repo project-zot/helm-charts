@@ -163,3 +163,47 @@ tests:
       - matchRegex:
           path: spec.serviceName
           pattern: .*-headless$
+
+  - it: should not set GODEBUG env var when fips140 is false
+    set:
+      persistence: true
+      fips140: false
+      env:
+        - name: MY_VAR
+          value: "my-value"
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: GODEBUG
+            value: "fips140=only"
+
+  - it: should set GODEBUG=fips140=only env var when fips140 is true
+    set:
+      persistence: true
+      fips140: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: GODEBUG
+            value: "fips140=only"
+
+  - it: should include both GODEBUG and user-defined env vars when fips140 is true
+    set:
+      persistence: true
+      fips140: true
+      env:
+        - name: MY_VAR
+          value: "my-value"
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: GODEBUG
+            value: "fips140=only"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MY_VAR
+            value: "my-value"
