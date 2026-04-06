@@ -18,6 +18,7 @@ A zot registry helm chart for Kubernetes
 | extraContainers | list | `[]` |  |
 | extraVolumeMounts | list | `[]` |  |
 | extraVolumes | list | `[]` |  |
+| fips140 | bool | `false` | When true, sets GODEBUG=fips140=only environment variable on the container to enable FIPS 140 mode |
 | httpGet.port | int | `5000` |  |
 | httpGet.scheme | string | `"HTTP"` |  |
 | httproute | object | `{"annotations":{},"enabled":false,"hostnames":[],"labels":{},"parentRefs":[],"path":"/","pathType":"PathPrefix","rules":[]}` | HTTPRoute configuration for Gateway API (alternative to Ingress). Only enable this if you have Gateway API CRDs installed and a Gateway controller. |

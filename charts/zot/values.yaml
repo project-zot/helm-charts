@@ -209,6 +209,8 @@ pvc:
   storage: 8Gi
   # Name of the storage class to use if it is different than the default one
   storageClassName: null
+# -- When true, sets GODEBUG=fips140=only environment variable on the container to enable FIPS 140 mode
+fips140: false
 # List of environment variables to set on the container
 env:
 # - name: "TEST"
