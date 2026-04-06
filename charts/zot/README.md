@@ -40,7 +40,7 @@ A zot registry helm chart for Kubernetes
 | ingress.pathtype | string | `"ImplementationSpecific"` |  |
 | ingress.tls | list | `[]` |  |
 | listenerset | object | `{"annotations":{},"enabled":false,"labels":{},"listeners":[],"parentRef":{"group":"","kind":"","name":"","namespace":""}}` | ListenerSet configuration for Gateway API 1.5+ (experimental). Use this to manage listeners (ports/protocols/TLS) independently from the Gateway resource. Supports cert-manager 1.20+ annotations for automatic certificate management ("1-click certs"). Requires Gateway API experimental CRDs (gateway.networking.k8s.io/v1alpha2 ListenerSet). |
-| listenerset.annotations | object | `{}` | Annotations to add to the ListenerSet resource. Use cert-manager annotations here for automatic TLS certificate provisioning. |
+| listenerset.annotations | object | `{}` | Annotations to add to the ListenerSet resource. Use cert-manager annotations here for automatic TLS certificate provisioning. For example, cert-manager.io/cluster-issuer enables automated certificate issuance. |
 | listenerset.enabled | bool | `false` | Enable ListenerSet resource creation. |
 | listenerset.labels | object | `{}` | Labels to add to the ListenerSet resource. |
 | listenerset.listeners | list | `[]` | List of listeners to configure on the parent Gateway. At least one listener is required when ListenerSet is enabled. |
