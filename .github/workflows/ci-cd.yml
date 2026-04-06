@@ -9,6 +9,9 @@ name: chart-releaser
 jobs:
   helm-chart-release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -137,3 +140,12 @@ jobs:
           CR_KEYRING: keyring.gpg
           CR_PASSPHRASE_FILE: passphrase-file.txt
           CR_SIGN: true
+
+      - if: github.event_name == 'push' && github.ref_name == 'main'
+        name: Push chart to GHCR
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        run: |
+          echo "$GITHUB_TOKEN" | helm registry login ghcr.io --username ${{ github.actor }} --password-stdin
+          PKG=$(helm package charts/zot | awk '{print $NF}')
+          helm push "$PKG" oci://ghcr.io/project-zot/helm-charts
