@@ -96,6 +96,43 @@ httproute:
   #       add:
   #       - name: X-Custom-Header
   #         value: custom-value
+# -- ListenerSet configuration for Gateway API 1.5+ (experimental). Use this to manage listeners
+# (ports/protocols/TLS) independently from the Gateway resource. Supports cert-manager 1.20+
+# annotations for automatic certificate management ("1-click certs").
+# Requires Gateway API experimental CRDs (gateway.networking.k8s.io/v1alpha2 ListenerSet).
+listenerset:
+  # -- Enable ListenerSet resource creation.
+  enabled: false
+  # -- Annotations to add to the ListenerSet resource.
+  # Use cert-manager annotations here for automatic TLS certificate provisioning.
+  annotations: {}
+  # Example cert-manager annotation for automatic TLS:
+  # cert-manager.io/cluster-issuer: letsencrypt-prod
+  # -- Labels to add to the ListenerSet resource.
+  labels: {}
+  # -- Parent Gateway reference that this ListenerSet attaches to.
+  parentRef:
+    # -- Name of the parent Gateway. Required when ListenerSet is enabled.
+    name: ""
+    # -- Namespace of the parent Gateway. Defaults to the same namespace if not set.
+    namespace: ""
+    # -- Group of the parent Gateway resource.
+    group: ""
+    # -- Kind of the parent resource.
+    kind: ""
+  # -- List of listeners to configure on the parent Gateway.
+  # At least one listener is required when ListenerSet is enabled.
+  listeners: []
+  # Example listeners configuration:
+  # - name: https
+  #   port: 443
+  #   protocol: HTTPS
+  #   hostname: "zot.example.com"
+  #   tls:
+  #     mode: Terminate
+  #     certificateRefs:
+  #       - kind: Secret
+  #         name: zot-tls-cert
 # By default, Kubernetes HTTP probes use HTTP 'scheme'. So if TLS is enabled
 # in configuration, to prevent failures, the scheme must be set to 'HTTPS'.
 httpGet:

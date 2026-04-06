@@ -1,6 +1,6 @@
 # zot
 
-![Version: 0.1.104](https://img.shields.io/badge/Version-0.1.104-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v2.1.15](https://img.shields.io/badge/AppVersion-v2.1.15-informational?style=flat-square)
+![Version: 0.1.105](https://img.shields.io/badge/Version-0.1.105-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v2.1.15](https://img.shields.io/badge/AppVersion-v2.1.15-informational?style=flat-square)
 
 A zot registry helm chart for Kubernetes
 
@@ -39,6 +39,16 @@ A zot registry helm chart for Kubernetes
 | ingress.hosts[0].paths[0].path | string | `"/"` |  |
 | ingress.pathtype | string | `"ImplementationSpecific"` |  |
 | ingress.tls | list | `[]` |  |
+| listenerset | object | `{"annotations":{},"enabled":false,"labels":{},"listeners":[],"parentRef":{"group":"","kind":"","name":"","namespace":""}}` | ListenerSet configuration for Gateway API 1.5+ (experimental). Use this to manage listeners (ports/protocols/TLS) independently from the Gateway resource. Supports cert-manager 1.20+ annotations for automatic certificate management ("1-click certs"). Requires Gateway API experimental CRDs (gateway.networking.k8s.io/v1alpha2 ListenerSet). |
+| listenerset.annotations | object | `{}` | Annotations to add to the ListenerSet resource. Use cert-manager annotations here for automatic TLS certificate provisioning. |
+| listenerset.enabled | bool | `false` | Enable ListenerSet resource creation. |
+| listenerset.labels | object | `{}` | Labels to add to the ListenerSet resource. |
+| listenerset.listeners | list | `[]` | List of listeners to configure on the parent Gateway. At least one listener is required when ListenerSet is enabled. |
+| listenerset.parentRef | object | `{"group":"","kind":"","name":"","namespace":""}` | Parent Gateway reference that this ListenerSet attaches to. |
+| listenerset.parentRef.group | string | `""` | Group of the parent Gateway resource. |
+| listenerset.parentRef.kind | string | `""` | Kind of the parent resource. |
+| listenerset.parentRef.name | string | `""` | Name of the parent Gateway. Required when ListenerSet is enabled. |
+| listenerset.parentRef.namespace | string | `""` | Namespace of the parent Gateway. Defaults to the same namespace if not set. |
 | metrics.enabled | bool | `false` |  |
 | metrics.serviceMonitor.basicAuth.passwordKey | string | `"password"` |  |
 | metrics.serviceMonitor.basicAuth.secretName | string | `"basic-auth"` |  |
