@@ -1,6 +1,6 @@
 apiVersion: v2
-appVersion: v2.1.15
+appVersion: v2.1.16
 description: A zot registry helm chart for Kubernetes
 name: zot
 type: application
-version: 0.1.105
+version: 0.1.107
