@@ -1,0 +1,43 @@
+suite: deployment tests
+templates:
+  - deployment.yaml
+release:
+  name: my-release
+tests:
+  - it: should create deployment when persistence is disabled
+    set:
+      persistence: false
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: Deployment
+
+  - it: should not create deployment when persistence is enabled
+    set:
+      persistence: true
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not have initContainers when not set
+    set:
+      persistence: false
+    asserts:
+      - isNull:
+          path: spec.template.spec.initContainers
+
+  - it: should render initContainers when set
+    set:
+      persistence: false
+      initContainers:
+        - name: init-config
+          image: busybox
+          command: ["sh", "-c", "echo initializing"]
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: init-config
+      - equal:
+          path: spec.template.spec.initContainers[0].image
+          value: busybox
