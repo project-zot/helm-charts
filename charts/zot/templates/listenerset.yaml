@@ -1,0 +1,33 @@
+{{- if and .Values.listenerset .Values.listenerset.enabled -}}
+{{- $fullName := include "zot.fullname" . -}}
+{{- if not .Values.listenerset.parentRef.name }}
+{{- fail "parentRef.name is required when ListenerSet is enabled." }}
+{{- end }}
+{{- if not .Values.listenerset.listeners }}
+{{- fail "At least one listener is required when ListenerSet is enabled." }}
+{{- end }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: ListenerSet
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "zot.labels" . | nindent 4 }}
+    {{- with .Values.listenerset.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.listenerset.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  parentRef:
+    group: {{ .Values.listenerset.parentRef.group }}
+    kind: {{ .Values.listenerset.parentRef.kind }}
+    name: {{ .Values.listenerset.parentRef.name }}
+    {{- with .Values.listenerset.parentRef.namespace }}
+    namespace: {{ . }}
+    {{- end }}
+  listeners:
+  {{- toYaml .Values.listenerset.listeners | nindent 4 }}
+{{- end }}

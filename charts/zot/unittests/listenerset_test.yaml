@@ -1,0 +1,198 @@
+suite: test listenerset
+templates:
+  - listenerset.yaml
+tests:
+  - it: should be empty if listenerset is not enabled
+    asserts:
+      - hasDocuments:
+          count: 0
+  - it: should have apiVersion gateway.networking.k8s.io/v1
+    set:
+      listenerset.enabled: true
+      listenerset.parentRef.name: test-gateway
+      listenerset.listeners:
+        - name: https
+          port: 443
+          protocol: HTTPS
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: ListenerSet
+      - isAPIVersion:
+          of: gateway.networking.k8s.io/v1
+  - it: should have correct parentRef with defaults
+    set:
+      listenerset.enabled: true
+      listenerset.parentRef.name: test-gateway
+      listenerset.listeners:
+        - name: https
+          port: 443
+          protocol: HTTPS
+    asserts:
+      - equal:
+          path: spec.parentRef.name
+          value: test-gateway
+      - equal:
+          path: spec.parentRef.group
+          value: gateway.networking.k8s.io
+      - equal:
+          path: spec.parentRef.kind
+          value: Gateway
+  - it: should have correct parentRef with custom namespace
+    set:
+      listenerset.enabled: true
+      listenerset.parentRef.name: test-gateway
+      listenerset.parentRef.namespace: gateway-system
+      listenerset.listeners:
+        - name: https
+          port: 443
+          protocol: HTTPS
+    asserts:
+      - equal:
+          path: spec.parentRef.name
+          value: test-gateway
+      - equal:
+          path: spec.parentRef.namespace
+          value: gateway-system
+  - it: should have correct parentRef with custom group and kind
+    set:
+      listenerset.enabled: true
+      listenerset.parentRef.name: test-gateway
+      listenerset.parentRef.group: custom.io
+      listenerset.parentRef.kind: CustomGateway
+      listenerset.listeners:
+        - name: https
+          port: 443
+          protocol: HTTPS
+    asserts:
+      - equal:
+          path: spec.parentRef.group
+          value: custom.io
+      - equal:
+          path: spec.parentRef.kind
+          value: CustomGateway
+  - it: should have correct listener configuration
+    set:
+      listenerset.enabled: true
+      listenerset.parentRef.name: test-gateway
+      listenerset.listeners:
+        - name: https
+          port: 443
+          protocol: HTTPS
+          hostname: zot.example.com
+    asserts:
+      - equal:
+          path: spec.listeners[0].name
+          value: https
+      - equal:
+          path: spec.listeners[0].port
+          value: 443
+      - equal:
+          path: spec.listeners[0].protocol
+          value: HTTPS
+      - equal:
+          path: spec.listeners[0].hostname
+          value: zot.example.com
+  - it: should support multiple listeners
+    set:
+      listenerset.enabled: true
+      listenerset.parentRef.name: test-gateway
+      listenerset.listeners:
+        - name: http
+          port: 80
+          protocol: HTTP
+          hostname: zot.example.com
+        - name: https
+          port: 443
+          protocol: HTTPS
+          hostname: zot.example.com
+    asserts:
+      - equal:
+          path: spec.listeners[0].name
+          value: http
+      - equal:
+          path: spec.listeners[0].port
+          value: 80
+      - equal:
+          path: spec.listeners[1].name
+          value: https
+      - equal:
+          path: spec.listeners[1].port
+          value: 443
+  - it: should support TLS configuration in listeners
+    set:
+      listenerset.enabled: true
+      listenerset.parentRef.name: test-gateway
+      listenerset.listeners:
+        - name: https
+          port: 443
+          protocol: HTTPS
+          hostname: zot.example.com
+          tls:
+            mode: Terminate
+            certificateRefs:
+              - kind: Secret
+                name: zot-tls-cert
+    asserts:
+      - equal:
+          path: spec.listeners[0].tls.mode
+          value: Terminate
+      - equal:
+          path: spec.listeners[0].tls.certificateRefs[0].kind
+          value: Secret
+      - equal:
+          path: spec.listeners[0].tls.certificateRefs[0].name
+          value: zot-tls-cert
+  - it: should include cert-manager annotations
+    set:
+      listenerset.enabled: true
+      listenerset.parentRef.name: test-gateway
+      listenerset.annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+      listenerset.listeners:
+        - name: https
+          port: 443
+          protocol: HTTPS
+    asserts:
+      - equal:
+          path: metadata.annotations["cert-manager.io/cluster-issuer"]
+          value: letsencrypt-prod
+  - it: should include labels and annotations when specified
+    set:
+      listenerset.enabled: true
+      listenerset.parentRef.name: test-gateway
+      listenerset.labels:
+        custom-label: label-value
+      listenerset.annotations:
+        custom-annotation: annotation-value
+      listenerset.listeners:
+        - name: https
+          port: 443
+          protocol: HTTPS
+    asserts:
+      - equal:
+          path: metadata.labels.custom-label
+          value: label-value
+      - equal:
+          path: metadata.annotations.custom-annotation
+          value: annotation-value
+  - it: should fail if parentRef.name is empty
+    set:
+      listenerset.enabled: true
+      listenerset.parentRef.name: ""
+      listenerset.listeners:
+        - name: https
+          port: 443
+          protocol: HTTPS
+    asserts:
+      - failedTemplate:
+          errorMessage: "parentRef.name is required when ListenerSet is enabled."
+  - it: should fail if listeners is empty
+    set:
+      listenerset.enabled: true
+      listenerset.parentRef.name: test-gateway
+      listenerset.listeners: []
+    asserts:
+      - failedTemplate:
+          errorMessage: "At least one listener is required when ListenerSet is enabled."
