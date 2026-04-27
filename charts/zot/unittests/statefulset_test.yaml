@@ -163,3 +163,25 @@ tests:
       - matchRegex:
           path: spec.serviceName
           pattern: .*-headless$
+
+  - it: should not have initContainers when not set
+    set:
+      persistence: true
+    asserts:
+      - isNull:
+          path: spec.template.spec.initContainers
+
+  - it: should render initContainers when set
+    set:
+      persistence: true
+      initContainers:
+        - name: init-config
+          image: busybox
+          command: ["sh", "-c", "echo initializing"]
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: init-config
+      - equal:
+          path: spec.template.spec.initContainers[0].image
+          value: busybox

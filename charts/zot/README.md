@@ -39,6 +39,7 @@ A zot registry helm chart for Kubernetes
 | ingress.hosts[0].paths[0].path | string | `"/"` |  |
 | ingress.pathtype | string | `"ImplementationSpecific"` |  |
 | ingress.tls | list | `[]` |  |
+| initContainers | list | `[]` |  |
 | metrics.enabled | bool | `false` |  |
 | metrics.serviceMonitor.basicAuth.passwordKey | string | `"password"` |  |
 | metrics.serviceMonitor.basicAuth.secretName | string | `"basic-auth"` |  |
