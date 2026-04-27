@@ -60,8 +60,18 @@ spec:
           args:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- if or .Values.fips140 (not (empty (.Values.env | default (list)))) }}
           env:
-            {{- toYaml .Values.env | nindent 12 }}
+            {{- if .Values.fips140 }}
+            - name: GODEBUG
+              value: "fips140=only"
+            {{- end }}
+            {{- range .Values.env }}
+            {{- if not (and $.Values.fips140 (eq .name "GODEBUG")) }}
+            - {{- toYaml . | nindent 14 | trim }}
+            {{- end }}
+            {{- end }}
+          {{- end }}
           ports:
             - name: zot
               containerPort: {{ .Values.httpGet.port }}
