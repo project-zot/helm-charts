@@ -212,7 +212,7 @@ pvc:
 # -- When true, sets GODEBUG=fips140=only environment variable on the container to enable FIPS 140 mode
 fips140: false
 # List of environment variables to set on the container
-env:
+env: []
 # - name: "TEST"
 #  value: "ME"
 # - name: SECRET_NAME
