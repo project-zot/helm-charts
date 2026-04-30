@@ -97,6 +97,12 @@ class TestChartTracker(unittest.TestCase):
         self.assertIn("charts/test4", self.tracker.state["charts_to_bump"])
         self.assertNotIn("charts/test3", self.tracker.state["charts_to_bump"])
 
+    def test_add_charts_from_docs_skip_already_bumped(self):
+        """README-driven bumps must not add charts skipped as already bumped."""
+        docs = ["charts/test1/README.md", "charts/test2/README.md"]
+        self.tracker.add_charts_from_docs(docs, skip_chart_paths=["charts/test1"])
+        self.assertEqual(self.tracker.state["charts_to_bump"], ["charts/test2"])
+
     def test_save_and_load_state(self):
         """Test saving and loading state"""
         # Add some charts
@@ -467,10 +473,11 @@ index 1234567..abcdefg 100644
         """Test process_all_changes skips charts with existing version bumps"""
         # Mock chart changes
         mock_ct.return_value = ["charts/test1", "charts/test2"]
-        mock_helm_docs.return_value = []
 
         # Mock that test1 already has version bump, test2 doesn't
         mock_check_bumps.return_value = ["charts/test1"]
+        # helm-docs regenerating README must not re-queue test1 for a second bump
+        mock_helm_docs.return_value = ["charts/test1/README.md"]
 
         result = self.tracker.process_all_changes("HEAD~1")
 
@@ -493,12 +500,34 @@ index 1234567..abcdefg 100644
 
         # Mock that all charts already have version bumps
         mock_check_bumps.return_value = ["charts/test1", "charts/test2"]
+        # README refresh alone must not bump again after Chart.yaml already bumped
+        mock_helm_docs.return_value = ["charts/test1/README.md", "charts/test2/README.md"]
 
         result = self.tracker.process_all_changes("HEAD~1")
 
         self.assertFalse(result)  # No charts need bumping
         # Should not add any charts from ct list-changed
         self.assertEqual(len(self.tracker.state["charts_to_bump"]), 0)
+
+    @patch.object(ChartTracker, 'get_changed_charts_from_git')
+    @patch.object(ChartTracker, 'run_helm_docs')
+    @patch.object(ChartTracker, 'check_version_bumps_in_commits')
+    def test_process_all_changes_no_double_bump_when_helm_docs_refreshes_readme(
+        self, mock_check_bumps, mock_helm_docs, mock_ct
+    ):
+        """Regression: Chart version already bumped in since..HEAD; helm-docs still rewrites README.
+
+        Without skipping doc-derived charts that have an existing bump, CI would bump twice
+        (git path correctly skips, then add_charts_from_docs re-queues the same chart).
+        """
+        mock_ct.return_value = ["charts/zot"]
+        mock_check_bumps.return_value = ["charts/zot"]
+        mock_helm_docs.return_value = ["charts/zot/README.md"]
+
+        result = self.tracker.process_all_changes("3d0081a6cc783b5f5a1d5d37d63762e51cbdc29d")
+
+        self.assertFalse(result)
+        self.assertEqual(self.tracker.state["charts_to_bump"], [])
 
 
 class TestChartTrackerIntegration(unittest.TestCase):
