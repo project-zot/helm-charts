@@ -185,4 +185,3 @@ tests:
       - equal:
           path: spec.template.spec.initContainers[0].image
           value: busybox
-
