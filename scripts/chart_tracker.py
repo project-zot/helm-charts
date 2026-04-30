@@ -58,11 +58,18 @@ class ChartTracker:
         for chart_path in chart_list:
             self.add_chart(chart_path)
 
-    def add_charts_from_docs(self, doc_list):
-        """Add charts based on changed documentation files"""
+    def add_charts_from_docs(self, doc_list, skip_chart_paths=None):
+        """Add charts based on changed documentation files.
+
+        skip_chart_paths: chart dirs that already had a version bump in since..HEAD;
+        README updates from helm-docs must not trigger another bump for those charts.
+        """
+        skip = set(skip_chart_paths or [])
         for doc_path in doc_list:
             if doc_path.endswith('/README.md'):
                 chart_path = os.path.dirname(doc_path)
+                if chart_path in skip:
+                    continue
                 self.add_chart(chart_path)
 
     def save(self):
@@ -260,6 +267,8 @@ class ChartTracker:
 
     def process_all_changes(self, since, charts_dir="charts"):
         """Process all chart changes and documentation updates"""
+        charts_with_existing_bumps = []
+
         # Get changed charts using git operations
         changed_charts = self.get_changed_charts_from_git(since, charts_dir)
         if changed_charts:
@@ -281,7 +290,7 @@ class ChartTracker:
         changed_docs = self.run_helm_docs(charts_dir)
         if changed_docs:
             print(f"Found {len(changed_docs)} changed documentation files")
-            self.add_charts_from_docs(changed_docs)
+            self.add_charts_from_docs(changed_docs, skip_chart_paths=charts_with_existing_bumps)
 
         # Save the state
         self.save()
