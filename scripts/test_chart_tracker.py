@@ -175,15 +175,16 @@ class TestChartTracker(unittest.TestCase):
         # Mock successful git diff operation
         mock_run.return_value = type('MockResult', (), {
             'returncode': 0,
-            'stdout': 'charts/test1/Chart.yaml\ncharts/test2/Chart.yaml\n'
+            'stdout': 'charts/test1/Chart.yaml\ncharts/test2/templates/deployment.yaml\n'
         })()
 
-        result = self.tracker.get_changed_charts_from_git("main", "HEAD~1")
+        with patch.object(ChartTracker, '_discover_chart_dirs', return_value={"charts/test1", "charts/test2"}):
+            result = self.tracker.get_changed_charts_from_git("HEAD~1")
         self.assertEqual(result, ["charts/test1", "charts/test2"])
 
         # Verify git diff was called with correct parameters
         mock_run.assert_called_once_with(
-            ['git', 'diff', 'main..HEAD~1', '--name-only'],
+            ['git', 'diff', 'HEAD~1..HEAD', '--name-only'],
             capture_output=True,
             text=True
         )
@@ -194,7 +195,8 @@ class TestChartTracker(unittest.TestCase):
         # Mock failed git run
         mock_run.side_effect = subprocess.CalledProcessError(1, "git")
 
-        result = self.tracker.get_changed_charts_from_git("main", "HEAD~1")
+        with patch.object(ChartTracker, '_discover_chart_dirs', return_value={"charts/test1"}):
+            result = self.tracker.get_changed_charts_from_git("HEAD~1")
         self.assertEqual(result, [])
 
     @patch('chart_tracker.bump_patch_version')
@@ -265,7 +267,7 @@ class TestChartTracker(unittest.TestCase):
         mock_ct.return_value = ["charts/test1"]
         mock_helm_docs.return_value = ["charts/test2/README.md"]
 
-        result = self.tracker.process_all_changes("main", "HEAD~1")
+        result = self.tracker.process_all_changes("HEAD~1")
 
         self.assertTrue(result)
         self.assertEqual(len(self.tracker.state["charts_to_bump"]), 2)
@@ -273,7 +275,7 @@ class TestChartTracker(unittest.TestCase):
         self.assertIn("charts/test2", self.tracker.state["charts_to_bump"])
 
         # Verify methods were called
-        mock_ct.assert_called_once_with("main", "HEAD~1")
+        mock_ct.assert_called_once_with("HEAD~1", "charts")
         mock_helm_docs.assert_called_once_with("charts")
 
     @patch.object(ChartTracker, 'get_changed_charts_from_git')
@@ -284,7 +286,7 @@ class TestChartTracker(unittest.TestCase):
         mock_ct.return_value = []
         mock_helm_docs.return_value = []
 
-        result = self.tracker.process_all_changes("main", "HEAD~1")
+        result = self.tracker.process_all_changes("HEAD~1")
 
         self.assertFalse(result)
         self.assertEqual(len(self.tracker.state["charts_to_bump"]), 0)
@@ -297,7 +299,7 @@ class TestChartTracker(unittest.TestCase):
         mock_ct.return_value = ["charts/test1"]
         mock_helm_docs.return_value = ["charts/test1/README.md"]
 
-        result = self.tracker.process_all_changes("main", "HEAD~1")
+        result = self.tracker.process_all_changes("HEAD~1")
 
         self.assertTrue(result)
         # Should only have one instance of charts/test1
@@ -327,7 +329,7 @@ index 1234567..abcdefg 100644
         test_chart_yaml.write_text("version: 1.2.3")
 
         charts = [str(test_chart_dir)]
-        result = self.tracker.check_version_bumps_in_commits(charts, "main", "HEAD~1")
+        result = self.tracker.check_version_bumps_in_commits(charts, "HEAD~1")
 
         self.assertEqual(result, [str(test_chart_dir)])
         mock_run.assert_called_with(
@@ -356,7 +358,7 @@ index 1234567..abcdefg 100644
 """
 
         charts = ["charts/test1"]
-        result = self.tracker.check_version_bumps_in_commits(charts, "main", "HEAD~1")
+        result = self.tracker.check_version_bumps_in_commits(charts, "HEAD~1")
 
         self.assertEqual(result, [])
 
@@ -367,7 +369,7 @@ index 1234567..abcdefg 100644
         mock_run.return_value.stdout = ""
 
         charts = ["charts/test1"]
-        result = self.tracker.check_version_bumps_in_commits(charts, "main", "HEAD~1")
+        result = self.tracker.check_version_bumps_in_commits(charts, "HEAD~1")
 
         self.assertEqual(result, [])
 
@@ -378,7 +380,7 @@ index 1234567..abcdefg 100644
         mock_run.side_effect = subprocess.CalledProcessError(1, "git")
 
         charts = ["charts/test1"]
-        result = self.tracker.check_version_bumps_in_commits(charts, "main", "HEAD~1")
+        result = self.tracker.check_version_bumps_in_commits(charts, "HEAD~1")
 
         self.assertEqual(result, [])
 
@@ -394,7 +396,7 @@ index 1234567..abcdefg 100644
         # Mock that test1 already has version bump, test2 doesn't
         mock_check_bumps.return_value = ["charts/test1"]
 
-        result = self.tracker.process_all_changes("main", "HEAD~1")
+        result = self.tracker.process_all_changes("HEAD~1")
 
         self.assertTrue(result)
         # Should only add test2 (test1 already has version bump)
@@ -402,7 +404,7 @@ index 1234567..abcdefg 100644
         self.assertEqual(self.tracker.state["charts_to_bump"], ["charts/test2"])
 
         # Verify check_version_bumps_in_commits was called
-        mock_check_bumps.assert_called_once_with(["charts/test1", "charts/test2"], "main", "HEAD~1")
+        mock_check_bumps.assert_called_once_with(["charts/test1", "charts/test2"], "HEAD~1")
 
     @patch.object(ChartTracker, 'get_changed_charts_from_git')
     @patch.object(ChartTracker, 'run_helm_docs')
@@ -416,7 +418,7 @@ index 1234567..abcdefg 100644
         # Mock that all charts already have version bumps
         mock_check_bumps.return_value = ["charts/test1", "charts/test2"]
 
-        result = self.tracker.process_all_changes("main", "HEAD~1")
+        result = self.tracker.process_all_changes("HEAD~1")
 
         self.assertFalse(result)  # No charts need bumping
         # Should not add any charts from ct list-changed

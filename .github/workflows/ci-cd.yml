@@ -8,12 +8,16 @@ on:
 name: chart-releaser
 jobs:
   helm-chart-release:
+    # If this workflow pushed an auto-bump commit, skip the rerun to avoid duplicate work.
+    if: ${{ github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          # Use HELM_PUSH_TOKEN when available (push to main), otherwise fall back to GITHUB_TOKEN.
+          token: ${{ (github.event_name == 'push' && github.ref_name == 'main' && secrets.HELM_PUSH_TOKEN) || github.token }}
 
       - name: Configure Git
         run: |
@@ -91,6 +95,28 @@ jobs:
         if: steps.list-changed.outputs.changed == 'true' || github.event_name == 'push'
         run: |
           ct install --upgrade --target-branch ${{ env.TARGET_BRANCH }} --debug
+
+      - if: github.event_name == 'push' && github.ref_name == 'main'
+        name: Auto-bump chart versions and regenerate docs
+        run: |
+          echo "Running chart tracker (since=${{ github.event.before }})..."
+
+          if python3 ./scripts/chart_tracker.py process --since ${{ github.event.before }}; then
+            echo "Chart versions bumped; regenerating helm-docs..."
+            helm-docs --chart-search-root charts
+
+            git add charts/*/Chart.yaml charts/*/README.md
+            if git diff --staged --quiet; then
+              echo "No changes to commit"
+            else
+              git commit -m "chore: auto-bump chart versions and update docs [skip ci] [skip pr]"
+              git push origin ${{ github.ref_name }}
+            fi
+          else
+            echo "No charts need version bumps"
+          fi
+
+          python3 ./scripts/chart_tracker.py cleanup
 
       - if: github.event_name == 'push' && github.ref_name == 'main'
         name: Prepare GPG key for signing

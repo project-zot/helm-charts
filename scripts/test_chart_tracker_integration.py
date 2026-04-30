@@ -205,7 +205,7 @@ validate-maintainers: false
 
         # Test the chart tracker's get_changed_charts_from_git method with real git operations
         # Compare main branch to current HEAD (feature-branch)
-        changed_charts = self.tracker.get_changed_charts_from_git('main', 'HEAD')
+        changed_charts = self.tracker.get_changed_charts_from_git('HEAD~1')
 
         self.assertIn('charts/test-chart-1', changed_charts)
         self.assertNotIn('charts/test-chart-2', changed_charts)
@@ -226,9 +226,7 @@ validate-maintainers: false
         # Test version bump detection - use relative paths for the test charts
         # We need to be on the feature branch to compare it to main
         self._run_git(['checkout', 'feature-branch'])
-        charts_with_bumps = self.tracker.check_version_bumps_in_commits(
-            ['charts/test-chart-1'], 'main', 'HEAD~1'
-        )
+        charts_with_bumps = self.tracker.check_version_bumps_in_commits(['charts/test-chart-1'], 'HEAD~1')
         self.assertIn('charts/test-chart-1', charts_with_bumps)
 
     def test_no_version_bump_detection(self):
@@ -247,9 +245,7 @@ validate-maintainers: false
         # Test version bump detection - use relative paths for the test charts
         # We need to be on the feature branch to compare it to main
         self._run_git(['checkout', 'feature-branch'])
-        charts_with_bumps = self.tracker.check_version_bumps_in_commits(
-            ['charts/test-chart-1'], 'main', 'HEAD~1'
-        )
+        charts_with_bumps = self.tracker.check_version_bumps_in_commits(['charts/test-chart-1'], 'HEAD~1')
         self.assertNotIn('charts/test-chart-1', charts_with_bumps)
 
     def test_process_all_changes_with_existing_version_bumps(self):
@@ -278,7 +274,7 @@ validate-maintainers: false
             self.tracker.add_chart(chart)
 
         # Check for existing version bumps
-        charts_with_bumps = self.tracker.check_version_bumps_in_commits(changed_charts, 'main', 'HEAD~1')
+        charts_with_bumps = self.tracker.check_version_bumps_in_commits(changed_charts, 'HEAD~1')
 
         # Remove charts that already have version bumps
         for chart in charts_with_bumps:
@@ -314,7 +310,7 @@ validate-maintainers: false
             self.tracker.add_chart(chart)
 
         # Check for existing version bumps
-        charts_with_bumps = self.tracker.check_version_bumps_in_commits(changed_charts, 'main', 'HEAD~1')
+        charts_with_bumps = self.tracker.check_version_bumps_in_commits(changed_charts, 'HEAD~1')
 
         # Remove charts that already have version bumps
         for chart in charts_with_bumps:
@@ -356,7 +352,7 @@ validate-maintainers: false
             self.tracker.add_chart(chart)
 
         # Check for existing version bumps
-        charts_with_bumps = self.tracker.check_version_bumps_in_commits(changed_charts, 'main', 'HEAD~1')
+        charts_with_bumps = self.tracker.check_version_bumps_in_commits(changed_charts, 'HEAD~1')
 
         # Remove charts that already have version bumps
         for chart in charts_with_bumps:
@@ -384,9 +380,9 @@ validate-maintainers: false
         # We need to be on the feature branch to compare it to main
         self._run_git(['checkout', 'feature-branch'])
 
-        # Test process_all_changes with real operations
-        # This should detect no chart changes (Chart.yaml not modified) but helm-docs will generate new README.md
-        result = self.tracker.process_all_changes('main', 'HEAD~1', 'charts')
+        # Test process_all_changes with real operations.
+        # This should detect chart changes (values.yaml modified) and bump the chart version.
+        result = self.tracker.process_all_changes('HEAD~1', 'charts')
 
         # Should return True and add chart1 (needs version bump for doc changes)
         self.assertTrue(result)
@@ -438,15 +434,11 @@ validate-maintainers: false
     def test_git_diff_edge_cases(self):
         """Test git diff edge cases"""
         # Test with non-existent chart path
-        charts_with_bumps = self.tracker.check_version_bumps_in_commits(
-            ['charts/non-existent'], 'main', 'HEAD~1'
-        )
+        charts_with_bumps = self.tracker.check_version_bumps_in_commits(['charts/non-existent'], 'HEAD~1')
         self.assertEqual(charts_with_bumps, [])
 
         # Test with empty chart list
-        charts_with_bumps = self.tracker.check_version_bumps_in_commits(
-            [], 'main', 'HEAD~1'
-        )
+        charts_with_bumps = self.tracker.check_version_bumps_in_commits([], 'HEAD~1')
         self.assertEqual(charts_with_bumps, [])
 
     def test_complex_git_scenario(self):
@@ -485,7 +477,7 @@ validate-maintainers: false
             self.tracker.add_chart(chart)
 
         # Check for existing version bumps
-        charts_with_bumps = self.tracker.check_version_bumps_in_commits(changed_charts, 'main', 'HEAD~3')
+        charts_with_bumps = self.tracker.check_version_bumps_in_commits(changed_charts, 'HEAD~3')
 
         # Remove charts that already have version bumps
         for chart in charts_with_bumps:

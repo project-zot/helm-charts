@@ -121,7 +121,7 @@ The workflow prevents double version bumps using `chart-tracker.py`:
 
 ```bash
 # Process all changes and bump versions
-python3 ./scripts/chart_tracker.py process --target-branch main --since HEAD~1
+python3 ./scripts/chart_tracker.py process --since HEAD~1
 
 # Clean up state file
 python3 ./scripts/chart_tracker.py cleanup
