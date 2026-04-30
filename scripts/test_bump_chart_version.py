@@ -4,6 +4,7 @@ Unit tests for bump_chart_version.py
 """
 
 import os
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -204,6 +205,18 @@ version: 1.0.0
             with patch('sys.exit') as mock_exit:
                 main()
                 mock_exit.assert_called_with(1)
+
+    def test_chart_tracker_cli_missing_subcommand_returns_exit_error(self):
+        """chart_tracker.py must exit EXIT_ERROR when no process/cleanup (#114 CI contract)."""
+        from chart_tracker import EXIT_ERROR
+
+        script = Path(__file__).resolve().parent / 'chart_tracker.py'
+        result = subprocess.run(
+            [sys.executable, str(script)],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, EXIT_ERROR)
 
 
 if __name__ == '__main__':

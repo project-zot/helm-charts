@@ -13,7 +13,13 @@ from pathlib import Path
 from unittest.mock import patch
 
 # Import the module
-from chart_tracker import ChartTracker
+from chart_tracker import (
+    ChartTracker,
+    EXIT_BUMPED,
+    EXIT_ERROR,
+    EXIT_NO_BUMP,
+    main,
+)
 
 
 class TestChartTracker(unittest.TestCase):
@@ -198,6 +204,76 @@ class TestChartTracker(unittest.TestCase):
         with patch.object(ChartTracker, '_discover_chart_dirs', return_value={"charts/test1"}):
             result = self.tracker.get_changed_charts_from_git("HEAD~1")
         self.assertEqual(result, [])
+
+    def test_discover_chart_dirs_excludes_vendored_dependency(self):
+        """Vendored Helm deps live at charts/<chart>/charts/<dep>/Chart.yaml — not bump roots."""
+        root = Path(self.test_dir.name)
+        charts = root / "charts"
+        (charts / "myapp").mkdir(parents=True)
+        (charts / "myapp" / "Chart.yaml").write_text("name: myapp\nversion: 1.0.0\n")
+        vend = charts / "myapp" / "charts" / "redis"
+        vend.mkdir(parents=True)
+        (vend / "Chart.yaml").write_text("name: redis\nversion: 17.0.0\n")
+
+        tracker = ChartTracker(str(self.state_file))
+        discovered = tracker._discover_chart_dirs(str(charts))
+        myapp_root = str((charts / "myapp").resolve())
+        redis_root = str((charts / "myapp" / "charts" / "redis").resolve())
+        self.assertIn(myapp_root, discovered)
+        self.assertNotIn(redis_root, discovered)
+
+    def test_discover_chart_dirs_includes_non_vendored_nested_chart(self):
+        """charts/foo/bar/Chart.yaml (no charts/ segment at position 1) is a real chart root."""
+        root = Path(self.test_dir.name)
+        charts = root / "charts"
+        nested = charts / "foo" / "bar"
+        nested.mkdir(parents=True)
+        (nested / "Chart.yaml").write_text("name: bar\nversion: 1.0.0\n")
+
+        tracker = ChartTracker(str(self.state_file))
+        discovered = tracker._discover_chart_dirs(str(charts))
+        bar_root = str((charts / "foo" / "bar").resolve())
+        self.assertIn(bar_root, discovered)
+
+    @patch('subprocess.run')
+    def test_get_changed_charts_prefers_longest_chart_root_prefix(self, mock_run):
+        """Changed files map to the deepest matching chart root (nested charts)."""
+        mock_run.return_value = type('MockResult', (), {
+            'returncode': 0,
+            'stdout': 'charts/parent/subk/templates/deploy.yaml\n'
+        })()
+
+        roots = {"charts/parent", "charts/parent/subk"}
+        with patch.object(ChartTracker, '_discover_chart_dirs', return_value=roots):
+            result = self.tracker.get_changed_charts_from_git("HEAD~1")
+
+        self.assertEqual(result, ["charts/parent/subk"])
+
+    @patch.object(sys, 'argv', ['chart_tracker.py'])
+    def test_main_no_subcommand_returns_exit_error(self):
+        """Missing process/cleanup must return EXIT_ERROR (CI treats EXIT_BUMPED specially)."""
+        self.assertEqual(main(), EXIT_ERROR)
+
+    @patch.object(sys, 'argv', ['chart_tracker.py', 'process', '--since', 'HEAD~1'])
+    @patch('chart_tracker.ChartTracker')
+    def test_main_process_no_bump_returns_exit_no_bump(self, mock_tracker_cls):
+        mock_inst = mock_tracker_cls.return_value
+        mock_inst.process_all_changes.return_value = False
+        self.assertEqual(main(), EXIT_NO_BUMP)
+
+    @patch.object(sys, 'argv', ['chart_tracker.py', 'process', '--since', 'HEAD~1'])
+    @patch('chart_tracker.ChartTracker')
+    def test_main_process_bumped_returns_exit_bumped(self, mock_tracker_cls):
+        mock_inst = mock_tracker_cls.return_value
+        mock_inst.process_all_changes.return_value = True
+        self.assertEqual(main(), EXIT_BUMPED)
+
+    @patch.object(sys, 'argv', ['chart_tracker.py', 'process', '--since', 'HEAD~1'])
+    @patch('chart_tracker.ChartTracker')
+    def test_main_process_exception_returns_exit_error(self, mock_tracker_cls):
+        mock_inst = mock_tracker_cls.return_value
+        mock_inst.process_all_changes.side_effect = RuntimeError("boom")
+        self.assertEqual(main(), EXIT_ERROR)
 
     @patch('chart_tracker.bump_patch_version')
     def test_bump_chart_versions_success(self, mock_bump):

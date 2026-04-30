@@ -210,6 +210,70 @@ validate-maintainers: false
         self.assertIn('charts/test-chart-1', changed_charts)
         self.assertNotIn('charts/test-chart-2', changed_charts)
 
+    def test_since_head_detects_values_yaml_change_without_chart_yaml_change(self):
+        """Push-range detection (#113): values/templates changes attribute chart without Chart.yaml-only diff."""
+        self._create_branch('feature-branch')
+        self._modify_chart('charts/test-chart-1/values.yaml', {'replicaCount: 1': 'replicaCount: 7'})
+        self._commit_changes('Change replicas only')
+
+        self._run_git(['checkout', 'main'])
+        os.chdir(self.repo_path)
+        self._run_git(['checkout', 'feature-branch'])
+
+        changed_charts = self.tracker.get_changed_charts_from_git('HEAD~1')
+        self.assertIn('charts/test-chart-1', changed_charts)
+
+    def test_nested_chart_root_longest_prefix_via_git_diff(self):
+        """Nested chart dirs map changed files to deepest chart root (#114 longest-prefix)."""
+        self._run_git(['checkout', 'main'])
+
+        parent = self.charts_dir / 'parent'
+        parent.mkdir()
+        (parent / 'Chart.yaml').write_text('''apiVersion: v2
+name: parent
+type: application
+version: 1.0.0
+''')
+        subk = parent / 'subk'
+        subk.mkdir()
+        (subk / 'Chart.yaml').write_text('''apiVersion: v2
+name: subk
+type: application
+version: 1.0.0
+''')
+        self._run_git(['add', '.'])
+        self._run_git(['commit', '-m', 'Add nested charts'])
+
+        self._create_branch('nested-touch')
+        tpl = subk / 'templates'
+        tpl.mkdir(parents=True)
+        (tpl / 'deploy.yaml').write_text('kind: Deployment')
+        self._commit_changes('Touch nested template')
+
+        self._run_git(['checkout', 'main'])
+        os.chdir(self.repo_path)
+        self._run_git(['checkout', 'nested-touch'])
+
+        changed_charts = self.tracker.get_changed_charts_from_git('HEAD~1')
+        self.assertEqual(changed_charts, ['charts/parent/subk'])
+
+    def test_vendored_dependency_chart_not_discovered_as_root(self):
+        """charts/<chart>/charts/<dep>/Chart.yaml must not be a bump root (#114)."""
+        vend = self.chart1_dir / 'charts' / 'redis'
+        vend.mkdir(parents=True)
+        (vend / 'Chart.yaml').write_text('''apiVersion: v2
+name: redis
+type: application
+version: 16.0.0
+''')
+        self._run_git(['add', '.'])
+        self._run_git(['commit', '-m', 'Vendor redis subchart'])
+
+        os.chdir(self.repo_path)
+        roots = self.tracker._discover_chart_dirs('charts')
+        self.assertIn('charts/test-chart-1', roots)
+        self.assertNotIn('charts/test-chart-1/charts/redis', roots)
+
     def test_version_bump_detection_in_commits(self):
         """Test detection of version bumps in git commits"""
         # Create a feature branch and modify chart version
