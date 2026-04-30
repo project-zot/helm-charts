@@ -101,7 +101,10 @@ jobs:
         run: |
           echo "Running chart tracker (since=${{ github.event.before }})..."
 
-          if python3 ./scripts/chart_tracker.py process --since ${{ github.event.before }}; then
+          rc=0
+          python3 ./scripts/chart_tracker.py process --since ${{ github.event.before }} || rc=$?
+
+          if [ "$rc" -eq 1 ]; then
             echo "Chart versions bumped; regenerating helm-docs..."
             helm-docs --chart-search-root charts
 
@@ -112,8 +115,11 @@ jobs:
               git commit -m "chore: auto-bump chart versions and update docs [skip ci] [skip pr]"
               git push origin ${{ github.ref_name }}
             fi
-          else
+          elif [ "$rc" -eq 0 ]; then
             echo "No charts need version bumps"
+          else
+            echo "chart_tracker.py failed (exit=$rc)"
+            exit "$rc"
           fi
 
           python3 ./scripts/chart_tracker.py cleanup
@@ -157,6 +163,7 @@ jobs:
         uses: helm/chart-releaser-action@v1.7.0
         with:
           charts_dir: charts
+          skip_existing: true
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           CR_KEY: "${{ secrets.GPG_KEY_NAME }}"

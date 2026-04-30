@@ -13,6 +13,10 @@ from pathlib import Path
 # Import the version bumping function directly
 from bump_chart_version import bump_patch_version
 
+EXIT_NO_BUMP = 0
+EXIT_BUMPED = 1
+EXIT_ERROR = 2
+
 
 class ChartTracker:
     def __init__(self, state_file=".chart-tracker.json"):
@@ -123,11 +127,17 @@ class ChartTracker:
             return roots
 
         # Prefer one-level charts/<name>/Chart.yaml, but also support deeper layouts.
-        for chart_yaml in list(base.glob("*/Chart.yaml")) + list(base.rglob("Chart.yaml")):
-            try:
-                roots.add(str(chart_yaml.parent))
-            except Exception:
+        #
+        # Exclude vendored dependency charts under <chart>/charts/<dep>/Chart.yaml, since those are
+        # dependencies and not intended as independent bump targets in this repo.
+        for chart_yaml in base.rglob("Chart.yaml"):
+            rel = chart_yaml.relative_to(base).as_posix()
+            parts = rel.split("/")
+            # Skip Helm dependency charts under charts/<chart>/charts/<dep>/Chart.yaml.
+            if len(parts) >= 4 and parts[1] == "charts":
                 continue
+
+            roots.add(chart_yaml.parent.as_posix())
 
         return roots
 
@@ -153,6 +163,9 @@ class ChartTracker:
             if not chart_roots:
                 return []
 
+            # Deterministic longest-prefix match (handles nested chart roots correctly).
+            chart_roots_sorted = sorted(chart_roots, key=lambda p: (-len(p), p))
+
             # Determine chart directories impacted by changed files.
             # Any change under charts/<chart>/ should be considered a chart change,
             # since it affects rendered output (templates, values, etc.), not just Chart.yaml.
@@ -163,7 +176,7 @@ class ChartTracker:
 
                 # Attribute the changed file to the chart root it belongs to.
                 chart_dir = None
-                for root in chart_roots:
+                for root in chart_roots_sorted:
                     if file_path == root or file_path.startswith(root + "/"):
                         chart_dir = root
                         break
@@ -277,7 +290,10 @@ class ChartTracker:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Chart Tracker - Manage chart version bumping")
+    parser = argparse.ArgumentParser(
+        description="Chart Tracker - Manage chart version bumping",
+        epilog="Exit codes: 0=no bump needed, 1=bumped, 2=error."
+    )
     parser.add_argument("--state-file", default=".chart-tracker.json",
                        help="Path to the state JSON file")
 
@@ -294,7 +310,7 @@ def main():
 
     if not args.command:
         parser.print_help()
-        return 1
+        return EXIT_ERROR
 
     tracker = ChartTracker(args.state_file)
 
@@ -305,10 +321,10 @@ def main():
                 print("Charts need version bumps:")
                 tracker.print_status()
                 tracker.bump_chart_versions()
-                return 0
+                return EXIT_BUMPED
             else:
                 print("No charts need version bumps")
-                return 1
+                return EXIT_NO_BUMP
 
         elif args.command == "cleanup":
             tracker.cleanup()
@@ -317,7 +333,7 @@ def main():
 
     except Exception as e:
         print(f"Error: {e}")
-        return 1
+        return EXIT_ERROR
 
 
 if __name__ == "__main__":
