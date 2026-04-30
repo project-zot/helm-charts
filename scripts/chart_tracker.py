@@ -108,28 +108,70 @@ class ChartTracker:
 
             return changed_docs
 
-        except subprocess.CalledProcessError as e:
+        except (subprocess.CalledProcessError, FileNotFoundError) as e:
             print(f"Error running helm-docs: {e}")
             return []
 
-    def get_changed_charts_from_git(self, target_branch, since):
-        """Get list of changed charts using git operations"""
+    def _discover_chart_dirs(self, charts_dir="charts"):
+        """Return chart root directories under charts_dir.
+
+        A chart root is any directory containing a Chart.yaml file.
+        """
+        roots = set()
+        base = Path(charts_dir)
+        if not base.exists():
+            return roots
+
+        # Prefer one-level charts/<name>/Chart.yaml, but also support deeper layouts.
+        for chart_yaml in list(base.glob("*/Chart.yaml")) + list(base.rglob("Chart.yaml")):
+            try:
+                roots.add(str(chart_yaml.parent))
+            except Exception:
+                continue
+
+        return roots
+
+    def get_changed_charts_from_git(self, since, charts_dir="charts"):
+        """Get list of changed charts using git operations.
+
+        Note: In GitHub Actions `push` events, `since` is typically `github.event.before`.
+        We want the files changed by the push itself, i.e. `since..HEAD`.
+        """
         try:
-            # Use git diff to find changed files between target branch and since commit
-            result = subprocess.run(['git', 'diff', f'{target_branch}..{since}', '--name-only'],
-                                   capture_output=True, text=True)
+            # Use git diff to find changed files introduced by this range.
+            result = subprocess.run(
+                ['git', 'diff', f'{since}..HEAD', '--name-only'],
+                capture_output=True,
+                text=True
+            )
             if result.returncode != 0:
                 return []
 
             changed_files = result.stdout.strip().split('\n') if result.stdout.strip() else []
 
-            # Filter for chart directories
+            chart_roots = self._discover_chart_dirs(charts_dir)
+            if not chart_roots:
+                return []
+
+            # Determine chart directories impacted by changed files.
+            # Any change under charts/<chart>/ should be considered a chart change,
+            # since it affects rendered output (templates, values, etc.), not just Chart.yaml.
             changed_charts = []
             for file_path in changed_files:
-                if file_path.startswith('charts/') and '/Chart.yaml' in file_path:
-                    chart_dir = file_path.split('/Chart.yaml')[0]
-                    if chart_dir not in changed_charts:
-                        changed_charts.append(chart_dir)
+                if not file_path.startswith(f"{charts_dir}/"):
+                    continue
+
+                # Attribute the changed file to the chart root it belongs to.
+                chart_dir = None
+                for root in chart_roots:
+                    if file_path == root or file_path.startswith(root + "/"):
+                        chart_dir = root
+                        break
+                if not chart_dir:
+                    continue
+
+                if chart_dir not in changed_charts:
+                    changed_charts.append(chart_dir)
 
             return changed_charts
 
@@ -137,7 +179,7 @@ class ChartTracker:
             print(f"Error getting changed charts: {e}")
             return []
 
-    def check_version_bumps_in_commits(self, chart_paths, target_branch, since):
+    def check_version_bumps_in_commits(self, chart_paths, since):
         """Check if chart versions have already been bumped in the commits"""
         charts_with_bumps = []
 
@@ -203,15 +245,15 @@ class ChartTracker:
             except Exception as e:
                 print(f"Error bumping version for {chart_path}: {e}")
 
-    def process_all_changes(self, target_branch, since, charts_dir="charts"):
+    def process_all_changes(self, since, charts_dir="charts"):
         """Process all chart changes and documentation updates"""
         # Get changed charts using git operations
-        changed_charts = self.get_changed_charts_from_git(target_branch, since)
+        changed_charts = self.get_changed_charts_from_git(since, charts_dir)
         if changed_charts:
             print(f"Found {len(changed_charts)} changed charts")
 
             # Check which charts already have version bumps in the commits
-            charts_with_existing_bumps = self.check_version_bumps_in_commits(changed_charts, target_branch, since)
+            charts_with_existing_bumps = self.check_version_bumps_in_commits(changed_charts, since)
 
             # Only add charts that don't already have version bumps
             charts_needing_bumps = [chart for chart in changed_charts if chart not in charts_with_existing_bumps]
@@ -243,7 +285,6 @@ def main():
 
     # Process command
     process_parser = subparsers.add_parser("process", help="Process all changes and detect charts to bump")
-    process_parser.add_argument("--target-branch", required=True, help="Target branch for git diff comparison")
     process_parser.add_argument("--since", required=True, help="Since commit for git diff comparison")
 
     # Cleanup command
@@ -259,7 +300,7 @@ def main():
 
     try:
         if args.command == "process":
-            has_changes = tracker.process_all_changes(args.target_branch, args.since)
+            has_changes = tracker.process_all_changes(args.since)
             if has_changes:
                 print("Charts need version bumps:")
                 tracker.print_status()
