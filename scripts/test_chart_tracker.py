@@ -496,7 +496,6 @@ index 1234567..abcdefg 100644
         """Test process_all_changes when all charts already have version bumps"""
         # Mock chart changes
         mock_ct.return_value = ["charts/test1", "charts/test2"]
-        mock_helm_docs.return_value = []
 
         # Mock that all charts already have version bumps
         mock_check_bumps.return_value = ["charts/test1", "charts/test2"]
