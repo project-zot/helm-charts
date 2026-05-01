@@ -91,7 +91,7 @@ The script is automatically used by the CI/CD workflow to:
 5. Script deduplicates and tracks unique charts that need version bumps
 6. Script calls `bump_patch_version()` function directly for each chart (handled internally)
 7. Generates helm-docs for all charts
-8. Commits changes with message: `chore: auto-bump chart versions and update docs`
+8. Commits changes with message: `chore: auto-bump chart versions and update docs [skip release]` (CI still runs on the PAT push; release job skips — not a GitHub `[skip ci]` keyword)
 
 ### Smart Detection
 
