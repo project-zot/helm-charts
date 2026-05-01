@@ -30,8 +30,13 @@ HELM_PASSPHRASE_FILE="${HELM_PASSPHRASE_FILE:-passphrase-file.txt}"
 
 _helm_ring_bin=""
 cleanup_push_charts() {
-  rm -rf "${WORKDIR:-}"
-  [[ -n "${_helm_ring_bin:-}" && -f "${_helm_ring_bin}" ]] && rm -f "${_helm_ring_bin}"
+  echo "Cleanup"
+  # Best-effort only: under `set -e`, a failing EXIT trap overrides the script's exit status.
+  # That produced CI failures where `helm push` printed Pushed/Digest then the step exited 1.
+  rm -rf "${WORKDIR:-}" || true
+  if [[ -n "${_helm_ring_bin:-}" && -f "${_helm_ring_bin}" ]]; then
+    rm -f "${_helm_ring_bin}" || true
+  fi
 }
 
 if [[ -z "${GITHUB_TOKEN:-}" ]]; then
