@@ -1,3 +1,4 @@
+name: chart-releaser
 on:
   push:
     branches:
@@ -5,19 +6,21 @@ on:
   pull_request:
     branches:
       - main
-name: chart-releaser
+
+permissions:
+  contents: read
+
 jobs:
-  helm-chart-release:
-    # If this workflow pushed an auto-bump commit, skip the rerun to avoid duplicate work.
-    if: ${{ github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]') }}
+  ci:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          # Use HELM_PUSH_TOKEN when available (push to main), otherwise fall back to GITHUB_TOKEN.
-          token: ${{ (github.event_name == 'push' && github.ref_name == 'main' && secrets.HELM_PUSH_TOKEN) || github.token }}
+          token: ${{ github.token }}
 
       - name: Configure Git
         run: |
@@ -96,9 +99,64 @@ jobs:
         run: |
           ct install --upgrade --target-branch ${{ env.TARGET_BRANCH }} --debug
 
-      - if: github.event_name == 'push' && github.ref_name == 'main'
-        name: Auto-bump chart versions and regenerate docs
+  release:
+    needs: ci
+    if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ github.token }}
+
+      - name: Configure Git
         run: |
+          git config user.name 'github-actions'
+          git config user.email 'github-actions@users.noreply.github.com'
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4.3.1
+        with:
+          version: v3.19.4
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.9'
+          check-latest: true
+
+      - name: Install chart-testing
+        uses: helm/chart-testing-action@v2.7.0
+
+      - name: Install helm-docs
+        uses: losisin/helm-docs-github-action@v1.6.2
+        with:
+          git-push: false
+          chart-search-root: charts
+
+      - name: Set target branch on push
+        run: |
+          echo "TARGET_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
+          echo "SINCE=${{ github.event.before }}" >> $GITHUB_ENV
+
+      - name: Run chart-testing list-changed
+        id: list-changed
+        run: |
+          changed=$(ct list-changed --target-branch ${{ env.TARGET_BRANCH }} --since ${{ env.SINCE }})
+          if [[ -n "$changed" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Auto-bump chart versions and regenerate docs
+        id: auto-bump
+        run: |
+          echo "chart_changed=false" >> "$GITHUB_OUTPUT"
+
           echo "Running chart tracker (since=${{ github.event.before }})..."
 
           rc=0
@@ -112,8 +170,10 @@ jobs:
             if git diff --staged --quiet; then
               echo "No changes to commit"
             else
-              git commit -m "chore: auto-bump chart versions and update docs [skip ci] [skip pr]"
+              git commit -m "chore: auto-bump chart versions and update docs"
               git push origin ${{ github.ref_name }}
+
+              echo "chart_changed=true" >> "$GITHUB_OUTPUT"
             fi
           elif [ "$rc" -eq 0 ]; then
             echo "No charts need version bumps"
@@ -124,8 +184,7 @@ jobs:
 
           python3 ./scripts/chart_tracker.py cleanup
 
-      - if: github.event_name == 'push' && github.ref_name == 'main'
-        name: Prepare GPG key for signing
+      - name: Prepare GPG key for signing
         env:
           GPG_PRIVATE_KEY: "${{ secrets.GPG_PRIVATE_KEY }}"
           GPG_PASSPHRASE: "${{ secrets.GPG_PASSPHRASE }}"
@@ -158,8 +217,7 @@ jobs:
           gpg --list-secret-keys --keyid-format LONG
           ls -lh keyring.gpg
 
-      - if: github.event_name == 'push' && github.ref_name == 'main'
-        name: Run chart-releaser
+      - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
         with:
           charts_dir: charts
@@ -170,3 +228,12 @@ jobs:
           CR_KEYRING: keyring.gpg
           CR_PASSPHRASE_FILE: passphrase-file.txt
           CR_SIGN: true
+
+      - if: ${{ steps.list-changed.outputs.changed == 'true' || steps.auto-bump.outputs.chart_changed == 'true' }}
+        name: Push charts to GHCR
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          HELM_SIGN_KEY: "${{ secrets.GPG_KEY_NAME }}"
+          HELM_KEYRING: keyring.gpg
+          HELM_PASSPHRASE_FILE: passphrase-file.txt
+        run: ./scripts/push-charts-ghcr.sh

@@ -65,6 +65,23 @@ gpg --import signing-key.pub
 
 > ⚠️ **Warning**: Always verify the fingerprint matches `6559 87EE 2D5C 291F CDFA  6592 606D B108 4F6D 3EF0` before trusting the key.
 
+## OCI charts (e.g. GHCR)
+
+Charts pushed with `helm push` can include the same GPG provenance (`.prov`) as a **second layer** on the OCI manifest when the `.prov` file sits next to the `.tgz` at push time ([Helm OCI registries](https://helm.sh/docs/topics/registries/)).
+
+After importing the project public key using the same steps as in the **Complete Example** section above, pull with `--prov` and verify locally:
+
+```bash
+# Import key (once) — same steps as in "Complete Example"
+
+helm pull oci://ghcr.io/project-zot/helm-charts/zot --version <version> --prov
+helm verify zot-<version>.tgz
+
+helm install my-zot oci://ghcr.io/project-zot/helm-charts/zot --version <version> --verify
+```
+
+If `--prov` does not fetch a `.prov` file, that chart tag may have been published without signing or your Helm client/registry combination did not expose the provenance layer.
+
 ## Troubleshooting
 
 ### "WARNING: Verification not found"
