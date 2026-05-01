@@ -101,7 +101,8 @@ jobs:
 
   release:
     needs: ci
-    if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+    # Auto-bump commits include [skip release] so PAT pushes still run CI but skip chart-releaser/GHCR (not a GitHub-wide skip keyword).
+    if: ${{ github.event_name == 'push' && github.ref_name == 'main' && !contains(github.event.head_commit.message, '[skip release]') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -111,7 +112,8 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          token: ${{ github.token }}
+          # PAT push triggers Actions; auto-bump commit uses [skip release] so only release is skipped.
+          token: ${{ secrets.HELM_PUSH_TOKEN || github.token }}
 
       - name: Configure Git
         run: |
@@ -170,7 +172,7 @@ jobs:
             if git diff --staged --quiet; then
               echo "No changes to commit"
             else
-              git commit -m "chore: auto-bump chart versions and update docs"
+              git commit -m "chore: auto-bump chart versions and update docs [skip release]"
               git push origin ${{ github.ref_name }}
 
               echo "chart_changed=true" >> "$GITHUB_OUTPUT"
