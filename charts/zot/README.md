@@ -40,6 +40,16 @@ A zot registry helm chart for Kubernetes
 | ingress.pathtype | string | `"ImplementationSpecific"` |  |
 | ingress.tls | list | `[]` |  |
 | initContainers | list | `[]` |  |
+| listenerset | object | `{"annotations":{},"enabled":false,"labels":{},"listeners":[],"parentRef":{"group":"gateway.networking.k8s.io","kind":"Gateway","name":"","namespace":""}}` | ListenerSet configuration for Gateway API. Use this to manage listeners (ports/protocols/TLS) independently from the Gateway resource. The parent Gateway must allow ListenerSet attachment via allowedListeners. Requires Gateway API CRDs with ListenerSet support (gateway.networking.k8s.io/v1 ListenerSet). |
+| listenerset.annotations | object | `{}` | Annotations to add to the ListenerSet resource. You may use annotations compatible with your certificate management stack. |
+| listenerset.enabled | bool | `false` | Enable ListenerSet resource creation. |
+| listenerset.labels | object | `{}` | Labels to add to the ListenerSet resource. |
+| listenerset.listeners | list | `[]` | List of listeners to configure on the parent Gateway. At least one listener is required when ListenerSet is enabled. |
+| listenerset.parentRef | object | `{"group":"gateway.networking.k8s.io","kind":"Gateway","name":"","namespace":""}` | Parent Gateway reference that this ListenerSet attaches to. |
+| listenerset.parentRef.group | string | `"gateway.networking.k8s.io"` | Group of the parent Gateway resource. |
+| listenerset.parentRef.kind | string | `"Gateway"` | Kind of the parent resource. |
+| listenerset.parentRef.name | string | `""` | Name of the parent Gateway. Required when ListenerSet is enabled. |
+| listenerset.parentRef.namespace | string | `""` | Namespace of the parent Gateway. Defaults to the same namespace if not set. |
 | metrics.enabled | bool | `false` |  |
 | metrics.serviceMonitor.basicAuth.passwordKey | string | `"password"` |  |
 | metrics.serviceMonitor.basicAuth.secretName | string | `"basic-auth"` |  |
