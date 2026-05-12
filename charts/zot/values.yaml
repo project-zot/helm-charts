@@ -24,6 +24,13 @@ serviceHeadless:
   port: 5000
   # Annotations to add to the headless service
   annotations: {}
+# -- StatefulSet options; only applies when persistence is enabled.
+statefulSet:
+  # -- If true, always render StatefulSet `spec.serviceName` (recommended for strict schema validators).
+  # If false, omit `serviceName` unless headless is enabled; use when an upgrade fails on immutable `serviceName`.
+  # With false and headless off, the chart matches older template output but the rendered StatefulSet may not pass
+  # strict OpenAPI checks (for example kubeconform --strict); keep true when GitOps or CI gates on schema-clean YAML.
+  strictServiceName: true
 service:
   type: NodePort
   port: 5000

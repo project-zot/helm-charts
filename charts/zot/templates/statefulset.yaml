@@ -12,7 +12,14 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  serviceName: {{ include "zot.fullname" . }}{{ if and .Values.serviceHeadless .Values.serviceHeadless.enabled }}-headless{{ end }}
+{{- $headless := and .Values.serviceHeadless .Values.serviceHeadless.enabled }}
+{{- $strictServiceName := true -}}
+{{- if and .Values.statefulSet (hasKey .Values.statefulSet "strictServiceName") -}}
+{{- $strictServiceName = .Values.statefulSet.strictServiceName -}}
+{{- end -}}
+{{- if or $strictServiceName $headless }}
+  serviceName: {{ include "zot.fullname" . }}{{ if $headless }}-headless{{ end }}
+{{- end }}
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:

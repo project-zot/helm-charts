@@ -162,6 +162,28 @@ tests:
           path: spec.serviceName
           value: my-release-zot
 
+  # Legacy template shape: omits spec.serviceName (may fail strict schema validators; see values.statefulSet.strictServiceName).
+  - it: should omit serviceName when strictServiceName is false and headless is disabled
+    set:
+      persistence: true
+      statefulSet:
+        strictServiceName: false
+    asserts:
+      - isNull:
+          path: spec.serviceName
+
+  - it: should set headless serviceName when strictServiceName is false but headless is enabled
+    set:
+      persistence: true
+      statefulSet:
+        strictServiceName: false
+      serviceHeadless:
+        enabled: true
+    asserts:
+      - equal:
+          path: spec.serviceName
+          value: my-release-zot-headless
+
   - it: should have an headless service when enabled
     set:
       persistence: true

@@ -85,6 +85,8 @@ A zot registry helm chart for Kubernetes
 | serviceHeadless.annotations | object | `{}` |  |
 | serviceHeadless.enabled | bool | `false` |  |
 | serviceHeadless.port | int | `5000` |  |
+| statefulSet | object | `{"strictServiceName":true}` | StatefulSet options; only applies when persistence is enabled. |
+| statefulSet.strictServiceName | bool | `true` | If true, always render StatefulSet `spec.serviceName` (recommended for strict schema validators). If false, omit `serviceName` unless headless is enabled; use when an upgrade fails on immutable `serviceName`. With false and headless off, strict OpenAPI-style validators (for example kubeconform --strict) may reject the manifest; keep true for schema-gated GitOps or CI. |
 | startupProbe.failureThreshold | int | `3` |  |
 | startupProbe.initialDelaySeconds | int | `5` |  |
 | startupProbe.periodSeconds | int | `10` |  |
