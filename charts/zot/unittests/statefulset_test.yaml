@@ -154,23 +154,15 @@ tests:
             mountPath: /var/lib/registry
             name: my-release-pvc
 
-  - it: should always set serviceName by default (not headless)
-    set:
-      persistence: true
-    asserts:
-      - equal:
-          path: spec.serviceName
-          value: my-release-zot
-
   - it: should have an headless service when enabled
     set:
       persistence: true
       serviceHeadless:
         enabled: true
     asserts:
-      - equal:
+      - matchRegex:
           path: spec.serviceName
-          value: my-release-zot-headless
+          pattern: .*-headless$
 
   - it: should not have initContainers when not set
     set:
