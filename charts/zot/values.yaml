@@ -157,10 +157,15 @@ configFiles:
   config.json: |-
     {
       "storage": { "rootDirectory": "/var/lib/registry" },
-      "http": { "address": "0.0.0.0", "port": "5000" },
+      "http": {
+        "address": "0.0.0.0",
+        "port": "5000",
+        "readTimeout": "60s",
+        "writeTimeout": "60s"
+      },
       "log": { "level": "debug" }
     }
-# Alternatively, the configuration can include authentication and acessControl
+# Alternatively, the configuration can include authentication and accessControl
 # data and we can use mountSecret option for the passwords.
 #
 #  config.json: |-
