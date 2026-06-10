@@ -298,6 +298,7 @@ deploymentAnnotations: {}
 priorityClassName: ""
 dnsConfig: {}
 dnsPolicy: "ClusterFirst"
+hostAliases: []
 # Metrics configuration
 # NOTE: need enable metric extension in config.json
 metrics:
