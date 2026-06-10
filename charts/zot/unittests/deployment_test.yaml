@@ -41,3 +41,25 @@ tests:
       - equal:
           path: spec.template.spec.initContainers[0].image
           value: busybox
+
+  - it: should not have hostAliases when not set
+    set:
+      persistence: false
+    asserts:
+      - isNull:
+          path: spec.template.spec.hostAliases
+
+  - it: should render hostAliases when set
+    set:
+      persistence: false
+      hostAliases:
+        - ip: "1.2.3.4"
+          hostnames:
+            - "foo.local"
+    asserts:
+      - equal:
+          path: spec.template.spec.hostAliases[0].ip
+          value: "1.2.3.4"
+      - equal:
+          path: spec.template.spec.hostAliases[0].hostnames[0]
+          value: foo.local
