@@ -244,3 +244,92 @@ tests:
       - equal:
           path: spec.template.spec.topologySpreadConstraints[1].topologyKey
           value: kubernetes.io/hostname
+
+  - it: should render a static nodeSelector unchanged
+    set:
+      persistence: true
+      nodeSelector:
+        disktype: ssd
+    asserts:
+      - equal:
+          path: spec.template.spec.nodeSelector.disktype
+          value: ssd
+
+  - it: should render static tolerations unchanged
+    set:
+      persistence: true
+      tolerations:
+        - key: dedicated
+          operator: Equal
+          value: zot
+          effect: NoSchedule
+    asserts:
+      - equal:
+          path: spec.template.spec.tolerations[0].key
+          value: dedicated
+      - equal:
+          path: spec.template.spec.tolerations[0].value
+          value: zot
+
+  - it: should render static affinity unchanged
+    set:
+      persistence: true
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: disktype
+                    operator: In
+                    values:
+                      - ssd
+    asserts:
+      - equal:
+          path: spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]
+          value: ssd
+
+  - it: should evaluate templates in nodeSelector
+    set:
+      persistence: true
+      global:
+        pool: gpu-pool
+      nodeSelector:
+        service: "{{ .Values.global.pool }}"
+    asserts:
+      - equal:
+          path: spec.template.spec.nodeSelector.service
+          value: gpu-pool
+
+  - it: should evaluate templates in tolerations
+    set:
+      persistence: true
+      global:
+        pool: gpu-pool
+      tolerations:
+        - key: "{{ .Values.global.pool }}"
+          operator: Equal
+          value: dedicated
+          effect: NoSchedule
+    asserts:
+      - equal:
+          path: spec.template.spec.tolerations[0].key
+          value: gpu-pool
+
+  - it: should evaluate templates in affinity
+    set:
+      persistence: true
+      global:
+        pool: gpu-pool
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: pool
+                    operator: In
+                    values:
+                      - "{{ .Values.global.pool }}"
+    asserts:
+      - equal:
+          path: spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]
+          value: gpu-pool

@@ -316,6 +316,17 @@ topologySpreadConstraints: []
 #       matchLabels:
 #         app.kubernetes.io/name: zot
 #         app.kubernetes.io/instance: $CHART_RELEASE
+# -- Node selector for pod assignment. Rendered through `tpl`, so values may
+# contain Helm template expressions (e.g. `{{ .Values.global.pool }}`); a value
+# with no `{{ }}` markers is emitted unchanged. Do not template untrusted input.
+# To output a literal brace, escape it, e.g. `{{ "{{" }}`.
+nodeSelector: {}
+# -- Affinity rules for pod assignment. Also rendered through `tpl` (same
+# escaping / untrusted-input note as nodeSelector above).
+affinity: {}
+# -- Tolerations for pod assignment. Also rendered through `tpl` (same
+# escaping / untrusted-input note as nodeSelector above).
+tolerations: []
 # Metrics configuration
 # NOTE: need enable metric extension in config.json
 metrics:
