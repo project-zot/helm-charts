@@ -33,7 +33,7 @@ helm repo update
 helm install zot project-zot/zot
 ```
 
-Find the chart on [Artifact Hub](https://artifacthub.io/packages/helm/project-zot/zot).
+Find the chart on [Artifact Hub](https://artifacthub.io/packages/helm/zot/zot).
 
 ## License
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fproject-zot%2Fhelm-charts.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fproject-zot%2Fhelm-charts?ref=badge_large)
