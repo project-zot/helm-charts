@@ -308,12 +308,14 @@ topologySpreadConstraints: []
 #     labelSelector:
 #       matchLabels:
 #         app.kubernetes.io/name: zot
+#         app.kubernetes.io/instance: $CHART_RELEASE
 #   - maxSkew: 1
 #     topologyKey: kubernetes.io/hostname
 #     whenUnsatisfiable: DoNotSchedule
 #     labelSelector:
 #       matchLabels:
 #         app.kubernetes.io/name: zot
+#         app.kubernetes.io/instance: $CHART_RELEASE
 # Metrics configuration
 # NOTE: need enable metric extension in config.json
 metrics:
