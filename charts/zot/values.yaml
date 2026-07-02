@@ -299,6 +299,23 @@ priorityClassName: ""
 dnsConfig: {}
 dnsPolicy: "ClusterFirst"
 hostAliases: []
+topologySpreadConstraints: []
+# Example: spread pods across zones and nodes
+# topologySpreadConstraints:
+#   - maxSkew: 1
+#     topologyKey: topology.kubernetes.io/zone
+#     whenUnsatisfiable: DoNotSchedule
+#     labelSelector:
+#       matchLabels:
+#         app.kubernetes.io/name: zot
+#         app.kubernetes.io/instance: $CHART_RELEASE
+#   - maxSkew: 1
+#     topologyKey: kubernetes.io/hostname
+#     whenUnsatisfiable: DoNotSchedule
+#     labelSelector:
+#       matchLabels:
+#         app.kubernetes.io/name: zot
+#         app.kubernetes.io/instance: $CHART_RELEASE
 # Metrics configuration
 # NOTE: need enable metric extension in config.json
 metrics:
