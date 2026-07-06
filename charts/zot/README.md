@@ -8,6 +8,7 @@ A zot registry helm chart for Kubernetes
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| affinity | object | `{}` | Affinity rules for pod assignment. Also rendered through `tpl` (same escaping / untrusted-input note as nodeSelector above). |
 | configFiles."config.json" | string | `"{\n  \"storage\": { \"rootDirectory\": \"/var/lib/registry\" },\n  \"http\": {\n    \"address\": \"0.0.0.0\",\n    \"port\": \"5000\",\n    \"readTimeout\": \"60s\",\n    \"writeTimeout\": \"60s\"\n  },\n  \"log\": { \"level\": \"debug\" }\n}"` |  |
 | deploymentAnnotations | object | `{}` |  |
 | dnsConfig | object | `{}` |  |
@@ -61,6 +62,7 @@ A zot registry helm chart for Kubernetes
 | mountConfig | bool | `false` |  |
 | mountSecret | bool | `false` |  |
 | namespace | string | `""` |  |
+| nodeSelector | object | `{}` | Node selector for pod assignment. Rendered through `tpl`, so values may contain Helm template expressions (e.g. `{{ .Values.global.pool }}`); a value with no `{{ }}` markers is emitted unchanged. Do not template untrusted input. To output a literal brace, escape it, e.g. `{{ "{{" }}`. |
 | persistence | bool | `false` |  |
 | podAnnotations | object | `{}` |  |
 | podLabels | object | `{}` |  |
@@ -92,6 +94,7 @@ A zot registry helm chart for Kubernetes
 | strategy.type | string | `"RollingUpdate"` |  |
 | test.image.repository | string | `"alpine"` |  |
 | test.image.tag | string | `"3.18"` |  |
+| tolerations | list | `[]` | Tolerations for pod assignment. Also rendered through `tpl` (same escaping / untrusted-input note as nodeSelector above). |
 | topologySpreadConstraints | list | `[]` |  |
 
 ----------------------------------------------
