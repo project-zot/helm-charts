@@ -316,6 +316,16 @@ topologySpreadConstraints: []
 #       matchLabels:
 #         app.kubernetes.io/name: zot
 #         app.kubernetes.io/instance: $CHART_RELEASE
+podDisruptionBudget:
+  enabled: false
+# Example: keep at least 1 pod available during disruptions
+# podDisruptionBudget:
+#   enabled: true
+#   minAvailable: 1
+# Example: allow at most 1 pod to be unavailable during disruptions
+# podDisruptionBudget:
+#   enabled: true
+#   maxUnavailable: 1
 # -- Node selector for pod assignment. Rendered through `tpl`, so values may
 # contain Helm template expressions (e.g. `{{ .Values.global.pool }}`); a value
 # with no `{{ }}` markers is emitted unchanged. Do not template untrusted input.

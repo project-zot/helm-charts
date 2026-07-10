@@ -1,0 +1,49 @@
+suite: test pdb
+templates:
+  - pdb.yaml
+tests:
+  - it: should be empty if podDisruptionBudget is not enabled
+    asserts:
+      - hasDocuments:
+          count: 0
+  - it: should render a PodDisruptionBudget when enabled
+    set:
+      podDisruptionBudget.enabled: true
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: PodDisruptionBudget
+      - isAPIVersion:
+          of: policy/v1
+      - equal:
+          path: spec.selector.matchLabels
+          value:
+            app.kubernetes.io/name: zot
+            app.kubernetes.io/instance: my-release
+      - isNull:
+          path: spec.minAvailable
+      - isNull:
+          path: spec.maxUnavailable
+  - it: should render minAvailable when set
+    set:
+      podDisruptionBudget:
+        enabled: true
+        minAvailable: 1
+    asserts:
+      - equal:
+          path: spec.minAvailable
+          value: 1
+      - isNull:
+          path: spec.maxUnavailable
+  - it: should render maxUnavailable when set
+    set:
+      podDisruptionBudget:
+        enabled: true
+        maxUnavailable: 1
+    asserts:
+      - equal:
+          path: spec.maxUnavailable
+          value: 1
+      - isNull:
+          path: spec.minAvailable
