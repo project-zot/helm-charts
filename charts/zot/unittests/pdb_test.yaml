@@ -1,0 +1,92 @@
+suite: test pdb
+templates:
+  - pdb.yaml
+release:
+  name: my-release
+tests:
+  - it: should be empty if podDisruptionBudget is not enabled
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not fail if podDisruptionBudget is absent
+    set:
+      podDisruptionBudget: null
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should fail if enabled but neither minAvailable nor maxUnavailable is set
+    set:
+      podDisruptionBudget.enabled: true
+    asserts:
+      - failedTemplate:
+          errorMessage: "podDisruptionBudget.enabled is true: set exactly one of podDisruptionBudget.minAvailable or podDisruptionBudget.maxUnavailable"
+
+  - it: should fail if enabled and both minAvailable and maxUnavailable are set
+    set:
+      podDisruptionBudget:
+        enabled: true
+        minAvailable: 1
+        maxUnavailable: 1
+    asserts:
+      - failedTemplate:
+          errorMessage: "podDisruptionBudget.enabled is true: set exactly one of podDisruptionBudget.minAvailable or podDisruptionBudget.maxUnavailable"
+
+  - it: should render minAvailable when set
+    set:
+      podDisruptionBudget:
+        enabled: true
+        minAvailable: 1
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: PodDisruptionBudget
+      - isAPIVersion:
+          of: policy/v1
+      - equal:
+          path: spec.selector.matchLabels
+          value:
+            app.kubernetes.io/name: zot
+            app.kubernetes.io/instance: my-release
+      - equal:
+          path: spec.minAvailable
+          value: 1
+      - isNull:
+          path: spec.maxUnavailable
+
+  - it: should render maxUnavailable when set
+    set:
+      podDisruptionBudget:
+        enabled: true
+        maxUnavailable: 1
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: PodDisruptionBudget
+      - isAPIVersion:
+          of: policy/v1
+      - equal:
+          path: spec.selector.matchLabels
+          value:
+            app.kubernetes.io/name: zot
+            app.kubernetes.io/instance: my-release
+      - equal:
+          path: spec.maxUnavailable
+          value: 1
+      - isNull:
+          path: spec.minAvailable
+
+  - it: should render maxUnavailable of 0
+    set:
+      podDisruptionBudget:
+        enabled: true
+        maxUnavailable: 0
+    asserts:
+      - equal:
+          path: spec.maxUnavailable
+          value: 0
+      - isNull:
+          path: spec.minAvailable

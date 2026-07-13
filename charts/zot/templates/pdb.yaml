@@ -1,0 +1,28 @@
+{{- if .Values.podDisruptionBudget }}
+{{- if .Values.podDisruptionBudget.enabled }}
+{{- $minAvailable := .Values.podDisruptionBudget.minAvailable }}
+{{- $maxUnavailable := .Values.podDisruptionBudget.maxUnavailable }}
+{{- $minSet := not (kindIs "invalid" $minAvailable) }}
+{{- $maxSet := not (kindIs "invalid" $maxUnavailable) }}
+{{- if eq $minSet $maxSet }}
+{{- fail "podDisruptionBudget.enabled is true: set exactly one of podDisruptionBudget.minAvailable or podDisruptionBudget.maxUnavailable" }}
+{{- end }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "zot.fullname" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "zot.labels" . | nindent 4 }}
+spec:
+  {{- if $minSet }}
+  minAvailable: {{ $minAvailable }}
+  {{- end }}
+  {{- if $maxSet }}
+  maxUnavailable: {{ $maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "zot.selectorLabels" . | nindent 6 }}
+{{- end }}
+{{- end }}

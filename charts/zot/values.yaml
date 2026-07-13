@@ -316,6 +316,19 @@ topologySpreadConstraints: []
 #       matchLabels:
 #         app.kubernetes.io/name: zot
 #         app.kubernetes.io/instance: $CHART_RELEASE
+
+# -- PodDisruptionBudget configuration for the zot pods, to limit disruptions
+# (e.g. node drains) so a minimum number of pods stay available. When enabled, set exactly
+# one of `minAvailable` or `maxUnavailable`. Rendering fails if both or neither is set.
+podDisruptionBudget:
+  # -- Enable creation of a PodDisruptionBudget for the zot pods.
+  enabled: false
+  # -- Minimum number/percentage of pods that must remain available during a
+  # disruption. Mutually exclusive with `maxUnavailable`.
+  minAvailable: null
+  # -- Maximum number/percentage of pods that can be unavailable during a
+  # disruption. Mutually exclusive with `minAvailable`.
+  maxUnavailable: null
 # -- Node selector for pod assignment. Rendered through `tpl`, so values may
 # contain Helm template expressions (e.g. `{{ .Values.global.pool }}`); a value
 # with no `{{ }}` markers is emitted unchanged. Do not template untrusted input.
