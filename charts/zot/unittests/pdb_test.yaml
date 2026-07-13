@@ -9,6 +9,13 @@ tests:
       - hasDocuments:
           count: 0
 
+  - it: should not fail if podDisruptionBudget is absent
+    set:
+      podDisruptionBudget: null
+    asserts:
+      - hasDocuments:
+          count: 0
+
   - it: should fail if enabled but neither minAvailable nor maxUnavailable is set
     set:
       podDisruptionBudget.enabled: true

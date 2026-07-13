@@ -1,3 +1,4 @@
+{{- if .Values.podDisruptionBudget }}
 {{- if .Values.podDisruptionBudget.enabled }}
 {{- $minAvailable := .Values.podDisruptionBudget.minAvailable }}
 {{- $maxUnavailable := .Values.podDisruptionBudget.maxUnavailable }}
@@ -23,4 +24,5 @@ spec:
   selector:
     matchLabels:
       {{- include "zot.selectorLabels" . | nindent 6 }}
+{{- end }}
 {{- end }}
