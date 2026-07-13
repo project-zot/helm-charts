@@ -1,6 +1,6 @@
 # zot
 
-![Version: 0.1.121](https://img.shields.io/badge/Version-0.1.121-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v2.1.18](https://img.shields.io/badge/AppVersion-v2.1.18-informational?style=flat-square)
+![Version: 0.1.122](https://img.shields.io/badge/Version-0.1.122-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v2.1.18](https://img.shields.io/badge/AppVersion-v2.1.18-informational?style=flat-square)
 
 A zot registry helm chart for Kubernetes
 
@@ -65,6 +65,10 @@ A zot registry helm chart for Kubernetes
 | nodeSelector | object | `{}` | Node selector for pod assignment. Rendered through `tpl`, so values may contain Helm template expressions (e.g. `{{ .Values.global.pool }}`); a value with no `{{ }}` markers is emitted unchanged. Do not template untrusted input. To output a literal brace, escape it, e.g. `{{ "{{" }}`. |
 | persistence | bool | `false` |  |
 | podAnnotations | object | `{}` |  |
+| podDisruptionBudget | object | `{"enabled":false,"maxUnavailable":null,"minAvailable":null}` | PodDisruptionBudget configuration for the zot pods, to limit disruptions (e.g. node drains) so a minimum number of pods stay available. When enabled, set exactly one of `minAvailable` or `maxUnavailable`. Rendering fails if both or neither is set. |
+| podDisruptionBudget.enabled | bool | `false` | Enable creation of a PodDisruptionBudget for the zot pods. |
+| podDisruptionBudget.maxUnavailable | string | `nil` | Maximum number/percentage of pods that can be unavailable during a disruption. Mutually exclusive with `minAvailable`. |
+| podDisruptionBudget.minAvailable | string | `nil` | Minimum number/percentage of pods that must remain available during a disruption. Mutually exclusive with `maxUnavailable`. |
 | podLabels | object | `{}` |  |
 | priorityClassName | string | `""` |  |
 | pvc.accessModes[0] | string | `"ReadWriteOnce"` |  |
