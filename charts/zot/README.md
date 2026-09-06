@@ -1,6 +1,6 @@
 # zot
 
-![Version: 0.1.122](https://img.shields.io/badge/Version-0.1.122-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v2.1.18](https://img.shields.io/badge/AppVersion-v2.1.18-informational?style=flat-square)
+![Version: 0.1.124](https://img.shields.io/badge/Version-0.1.124-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v2.1.21](https://img.shields.io/badge/AppVersion-v2.1.21-informational?style=flat-square)
 
 A zot registry helm chart for Kubernetes
 
@@ -33,7 +33,7 @@ A zot registry helm chart for Kubernetes
 | httproute.rules | list | `[]` | Advanced routing rules (optional). If not specified, a default rule matching the path will be created. Note: Any backendRefs in custom rules will be ignored and the zot service will always be used. |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"ghcr.io/project-zot/zot"` |  |
-| image.tag | string | `"v2.1.18"` |  |
+| image.tag | string | `"v2.1.21"` |  |
 | ingress.annotations | object | `{}` |  |
 | ingress.className | string | `"nginx"` |  |
 | ingress.enabled | bool | `false` |  |
