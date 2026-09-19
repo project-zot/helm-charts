@@ -283,6 +283,11 @@ extraContainers: []
 #   image: busybox
 #   command: ["sleep", "infinity"]
 
+# -- List of arbitrary Kubernetes objects deployed as part of the Helm release.
+# Rendered through Helm `tpl` with the root context, so objects may use
+# `.Release.Name`, `.Release.Namespace`, `.Values.*`, and chart helpers.
+extraObjects: []
+
 # Deployment strategy type
 strategy:
   # strategy.type should be set to Recreate if local storage is used
