@@ -1,6 +1,6 @@
 # zot
 
-![Version: 0.1.124](https://img.shields.io/badge/Version-0.1.124-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v2.1.21](https://img.shields.io/badge/AppVersion-v2.1.21-informational?style=flat-square)
+![Version: 0.1.125](https://img.shields.io/badge/Version-0.1.125-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v2.1.21](https://img.shields.io/badge/AppVersion-v2.1.21-informational?style=flat-square)
 
 A zot registry helm chart for Kubernetes
 
@@ -17,6 +17,7 @@ A zot registry helm chart for Kubernetes
 | externalSecrets | list | `[]` |  |
 | extraArgs | list | `[]` |  |
 | extraContainers | list | `[]` |  |
+| extraObjects | list | `[]` | List of arbitrary Kubernetes objects deployed as part of the Helm release. Rendered through Helm `tpl` with the root context, so objects may use `.Release.Name`, `.Release.Namespace`, `.Values.*`, and chart helpers. |
 | extraVolumeMounts | list | `[]` |  |
 | extraVolumes | list | `[]` |  |
 | hostAliases | list | `[]` |  |
