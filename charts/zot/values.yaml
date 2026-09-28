@@ -1,6 +1,24 @@
 # Default values for zot.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
+
+# Specify config.json as yaml object
+# This will be injected into a Secret resource, so that you can store certain
+# config options securely.
+# Make sure `config.json` is explicitly unset in `configFiles` so that it does
+# not conflict.
+config: {}
+# Example config:
+# config:
+#   storage:
+#     rootDirectory: "/var/lib/registry"
+#   http:
+#     address: 0.0.0.0
+#     port: '5000'
+#     readTimeout: 60s
+#     writeTimeout: 60s
+#   log:
+#     level: debug
 replicaCount: 1
 image:
   repository: ghcr.io/project-zot/zot

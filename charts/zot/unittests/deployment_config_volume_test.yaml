@@ -1,0 +1,91 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/helm-unittest/helm-unittest/main/schema/helm-testsuite.json
+suite: config mount in deployment
+
+# Can't use global templates in this test suite as it will break the checksum calculation
+# causing false negative test outcome.
+# templates:
+#   - deployment.yaml
+tests:
+  - it: has no checksum/config and checksum/configFiles if no config
+    template: deployment.yaml
+    asserts:
+      - notExists:
+          path: spec.template.metadata.annotations.checksum/config
+      - notExists:
+          path: spec.template.metadata.annotations.checksum/configFiles
+  - it: generate checksum/config if configFiles is present
+    template: deployment.yaml
+    set:
+      mountConfig: true
+      configFiles:
+        config.json: "{}"
+    asserts:
+      - exists:
+          path: spec.template.metadata.annotations.checksum/configFiles
+      - matchRegex:
+          path: spec.template.metadata.annotations.checksum/configFiles
+          pattern: "^[a-f0-9]{64}$" # SHA256 hex output
+  - it: should mount config secret
+    template: ./deployment.yaml
+    set:
+      config:
+        storage:
+          rootDirectory: /tmp/zot
+        http:
+          address: 127.0.0.1
+          port: "80"
+      configFiles:
+        config.json:
+    asserts:
+      - exists:
+          path: spec.template.metadata.annotations.checksum/config
+      - matchRegex:
+          path: spec.template.metadata.annotations.checksum/config
+          pattern: "^[a-f0-9]{64}$" # SHA256 hex output
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: RELEASE-NAME-config
+            projected:
+              sources:
+                - secret:
+                    name: RELEASE-NAME-config
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            mountPath: /etc/zot
+            name: RELEASE-NAME-config
+  - it: should mount both config secret and configFiles configMap
+    template: ./deployment.yaml
+    set:
+      mountConfig: true
+      config:
+        storage:
+          rootDirectory: /tmp/zot
+        http:
+          address: 127.0.0.1
+          port: "80"
+          auth:
+            htpasswd:
+              path: /etc/zot/htpasswd
+      configFiles:
+        config.json:
+        htpasswd: |-
+          admin:$2y$05$vmiurPmJvHylk78HHFWuruFFVePlit9rZWGA/FbZfTEmNRneGJtha
+          user:$2y$05$L86zqQDfH5y445dcMlwu6uHv.oXFgT6AiJCwpv3ehr7idc0rI3S2G
+    asserts:
+      - exists:
+          path: spec.template.metadata.annotations.checksum/configFiles
+      - exists:
+          path: spec.template.metadata.annotations.checksum/config
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: RELEASE-NAME-config
+            projected:
+              sources:
+                - configMap:
+                    name: RELEASE-NAME-config
+                - secret:
+                    name: RELEASE-NAME-config
