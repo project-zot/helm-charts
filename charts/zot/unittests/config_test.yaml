@@ -1,0 +1,50 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/helm-unittest/helm-unittest/main/schema/helm-testsuite.json
+suite: test config
+
+templates:
+  - ./config.yaml
+
+tests:
+  - it: fails if config.json is set via configFiles too
+    set:
+      config:
+        storage:
+          rootDirectory: /tmp/zot
+    asserts:
+      - failedTemplate:
+          errorMessage: |-
+            If `config` is used, make sure to not set `config.json` via `secretFiles` or `configFiles`
+  - it: fails if config.json is set via secretFiles too
+    set:
+      config:
+        storage:
+          rootDirectory: /tmp/zot
+      configFiles:
+        config.json:
+      secretFiles:
+        config.json: |-
+          {"storage": {"rootDirectory": "/tmp/zot"}}
+    asserts:
+      - failedTemplate:
+          errorMessage: |-
+            If `config` is used, make sure to not set `config.json` via `secretFiles` or `configFiles`
+  - it: generate Secret with config.json if config is set
+    set:
+      config:
+        storage:
+          rootDirectory: /tmp/zot
+        http:
+          address: 127.0.0.1
+          port: "80"
+      configFiles:
+        config.json:
+    asserts:
+      - containsDocument:
+          apiVersion: v1
+          kind: Secret
+      - equal:
+          path: data["config.json"]
+          decodeBase64: true
+          value: |-
+            {"http":{"address":"127.0.0.1","port":"80"},"storage":{"rootDirectory":"/tmp/zot"}}

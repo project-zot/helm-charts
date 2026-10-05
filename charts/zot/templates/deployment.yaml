@@ -25,11 +25,14 @@ spec:
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- if .Values.config }}
+        checksum/config: {{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}
+        {{- end }}
         {{- if and .Values.mountConfig .Values.configFiles }}
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/configFiles: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- end }}
         {{- if and .Values.mountSecret .Values.secretFiles }}
-        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        checksum/secretFiles: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
         {{- end }}
         {{- if .Values.forceRoll }}
         rollme: {{ randAlphaNum 5 | quote }}
@@ -73,7 +76,7 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /var/lib/registry
-          {{- if .Values.mountConfig }}
+          {{- if or .Values.mountConfig .Values.config }}
             - mountPath: '/etc/zot'
               name: {{ .Release.Name }}-config
           {{- end }}
@@ -131,10 +134,18 @@ spec:
       volumes:
         - name: data
           emptyDir: {}
-      {{- if .Values.mountConfig }}
+      {{- if or .Values.mountConfig .Values.config }}
         - name: {{ .Release.Name }}-config
-          configMap:
-            name: {{ .Release.Name }}-config
+          projected:
+            sources:
+              {{- if .Values.mountConfig }}
+              - configMap:
+                  name: {{ .Release.Name }}-config
+              {{- end }}
+              {{- if .Values.config }}
+              - secret:
+                  name: {{ .Release.Name }}-config
+              {{- end }}
       {{- end }}
       {{- if .Values.mountSecret }}
         - name: {{ .Release.Name }}-secret

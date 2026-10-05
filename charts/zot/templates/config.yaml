@@ -1,0 +1,15 @@
+{{- if .Values.config }}
+{{- if or (hasKey .Values.configFiles "config.json") (hasKey .Values.secretFiles "config.json") }}
+  {{- fail "If `config` is used, make sure to not set `config.json` via `secretFiles` or `configFiles`" }}
+{{- end }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-config
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "zot.labels" . | nindent 4 }}
+type: Opaque
+data:
+  config.json: {{ mustToJson .Values.config | b64enc }}
+{{- end }}

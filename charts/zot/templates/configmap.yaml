@@ -4,6 +4,8 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-config
   namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "zot.labels" . | nindent 4 }}
 data:
 {{- range $key, $val := .Values.configFiles }}
   {{ $key }}: {{ $val | quote }}
