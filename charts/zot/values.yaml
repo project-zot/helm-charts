@@ -24,7 +24,7 @@ image:
   repository: ghcr.io/project-zot/zot
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v2.1.21"
+  tag: "v2.1.22"
 # Defaults to the release namespace if not specified
 namespace: ""
 serviceAccount:
@@ -305,7 +305,6 @@ extraContainers: []
 # Rendered through Helm `tpl` with the root context, so objects may use
 # `.Release.Name`, `.Release.Namespace`, `.Values.*`, and chart helpers.
 extraObjects: []
-
 # Deployment strategy type
 strategy:
   # strategy.type should be set to Recreate if local storage is used
