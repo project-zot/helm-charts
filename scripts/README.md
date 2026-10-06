@@ -100,7 +100,7 @@ The workflow now handles these scenarios:
 - **Docs out of date only**: Bumps versions for charts with changed docs and updates docs
 - **Both**: Bumps versions for changed charts and updates docs (deduplicated)
 - **Neither**: No action taken
-- **Existing version bumps**: Skips charts that already have version bumps in the commits
+- **Existing version bumps** (for example the zot publish pipeline already bumped `Chart.yaml`): skips a second version bump, regenerates helm-docs, and commits README-only updates with `[skip release]`
 
 ### Version Bump Detection
 
@@ -108,6 +108,7 @@ The script intelligently detects if chart versions have already been bumped in t
 - Uses `git diff` to check for version field changes in `Chart.yaml` files
 - Skips charts that already have version bumps to avoid double-bumping
 - Only processes charts that actually need version increments
+- The CI release job still refreshes and commits chart READMEs when the version was pre-bumped, so docs do not lag behind `appVersion` / `image.tag`
 
 ### Deduplication Logic
 
