@@ -170,23 +170,26 @@ jobs:
 
           echo "Running chart tracker (since=${{ github.event.before }})..."
 
+          # Exit 0 = nothing to bump, 1 = bumped (both success). Other codes fail.
           rc=0
           python3 ./scripts/chart_tracker.py process --since ${{ github.event.before }} || rc=$?
-
-          if [ "$rc" -eq 1 ]; then
-            echo "Chart versions bumped; regenerating helm-docs..."
-            helm-docs --chart-search-root charts
-
-            if git diff --quiet -- charts/*/Chart.yaml charts/*/README.md; then
-              echo "No changes to commit"
-            else
-              echo "chart_changed=true" >> "$GITHUB_OUTPUT"
-            fi
-          elif [ "$rc" -eq 0 ]; then
-            echo "No charts need version bumps"
-          else
+          if [ "$rc" -gt 1 ]; then
             echo "chart_tracker.py failed (exit=$rc)"
             exit "$rc"
+          fi
+
+          helm-docs --chart-search-root charts
+
+          # Use status (not diff) so newly created, untracked READMEs are detected too.
+          if [ -z "$(git status --porcelain -- charts/*/Chart.yaml charts/*/README.md)" ]; then
+            echo "No changes to commit"
+          else
+            echo "chart_changed=true" >> "$GITHUB_OUTPUT"
+            if [ -z "$(git status --porcelain -- charts/*/Chart.yaml)" ]; then
+              echo "commit_message=chore: update chart docs [skip release]" >> "$GITHUB_OUTPUT"
+            else
+              echo "commit_message=chore: auto-bump chart versions and update docs [skip release]" >> "$GITHUB_OUTPUT"
+            fi
           fi
 
           python3 ./scripts/chart_tracker.py cleanup
@@ -196,7 +199,7 @@ jobs:
         if: steps.auto-bump.outputs.chart_changed == 'true'
         uses: planetscale/ghcommit-action@a6b150b81dca5dd027baa898604418eec9e11465 # v0.2.22
         with:
-          commit_message: 'chore: auto-bump chart versions and update docs [skip release]'
+          commit_message: ${{ steps.auto-bump.outputs.commit_message }}
           repo: ${{ github.repository }}
           branch: ${{ github.ref_name }}
           file_pattern: 'charts/*/Chart.yaml charts/*/README.md'
