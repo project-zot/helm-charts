@@ -6,10 +6,6 @@ This directory contains utility scripts for the Helm charts repository.
 
 Python script that automatically bumps the patch version of a Helm chart by directly manipulating the Chart.yaml file.
 
-## chart_tracker.py
-
-Python script that manages chart version bumping with JSON state tracking for deduplication.
-
 ### Usage
 
 ```bash
@@ -49,9 +45,31 @@ Python script that manages chart version bumping with JSON state tracking for de
 - Handles file I/O errors gracefully
 - Exits with appropriate error codes
 
-### Testing
+## chart_tracker.py
 
-The scripts include comprehensive unit tests:
+Python script that manages chart version bumping with JSON state tracking for deduplication. Used by the release job in `.github/workflows/ci-cd.yml`.
+
+### Commands
+
+```bash
+# Detect chart/doc changes; queue and attempt bumps (exit 1), or do nothing (exit 0)
+python3 ./scripts/chart_tracker.py process --since HEAD~1
+
+# Remove the temporary .chart-tracker.json state file
+python3 ./scripts/chart_tracker.py cleanup
+```
+
+Exit codes: `process` returns `0` if nothing was queued, `1` if charts were queued and bump was attempted (per-chart failures are logged but do not change the exit code), `2` on error. `cleanup` returns `0` on success, `2` on error.
+
+### What it does
+
+1. Finds charts changed since the given commit (`git diff`)
+2. Skips charts whose `Chart.yaml` `version` was already bumped in that range
+3. Runs `helm-docs` and may queue additional charts from stale READMEs (unless already bumped)
+4. Bumps patch versions for queued charts via `bump_patch_version()`
+5. Writes `.chart-tracker.json`; call `cleanup` afterward to remove it
+
+## Testing
 
 ```bash
 # Run all tests (quiet mode - only shows failures)
@@ -66,74 +84,52 @@ python3 scripts/test_chart_tracker.py
 python3 scripts/test_chart_tracker_integration.py
 ```
 
-**Note**: The error messages you see in verbose mode (like "Warning: Could not load state file") are **expected** - they're testing error handling scenarios where invalid JSON is encountered.
+Note: The error messages you see in verbose mode (like "Warning: Could not load state file") are expected — they exercise error handling for invalid JSON.
 
 The tests cover:
-- **bump_chart_version.py**: Successful version bumps, error handling, YAML parsing edge cases, complex chart structures
-- **chart_tracker.py**: State management, chart detection, version bumping integration, error handling, subprocess mocking, version bump detection in commits
+- bump_chart_version.py: Successful version bumps, error handling, YAML parsing edge cases, complex chart structures
+- chart_tracker.py: State management, chart detection, version bumping integration, error handling, subprocess mocking, version bump detection in commits
 
 ## GitHub Actions Integration
 
-The script is automatically used by the CI/CD workflow to:
+The release job on `main` (see `.github/workflows/ci-cd.yml`) uses these scripts to:
 
-1. **Detect changed charts** using git operations
-2. **Check if documentation is out of date** by generating helm-docs
-3. **Bump versions** for all changed charts
-4. **Generate documentation** using `helm-docs` GitHub Action
-5. **Commit changes** with appropriate commit messages
-
-### Workflow Steps
-
-1. When any push happens to `main` branch
-2. Python script processes all changes using `chart_tracker.py process`
-3. Script uses git operations to detect chart changes
-4. Script runs `helm-docs` and checks for documentation changes
-5. Script deduplicates and tracks unique charts that need version bumps
-6. Script calls `bump_patch_version()` function directly for each chart (handled internally)
-7. Generates helm-docs for all charts
-8. Commits changes with message: `chore: auto-bump chart versions and update docs [skip release]` (CI still runs on the PAT push; release job skips — not a GitHub `[skip ci]` keyword)
+1. Detect changed charts using git operations (`chart_tracker.py process`)
+2. Check whether documentation is out of date by generating helm-docs
+3. Bump versions for charts that need it (skipping charts already bumped in the push, e.g. from the zot publish pipeline)
+4. Run `helm-docs` again in the workflow and commit any dirty `Chart.yaml` / README files
+5. Choose the commit message from whether `Chart.yaml` changed (version bump) or only README (docs refresh); both messages include a token so the follow-up push runs CI but skips chart-releaser
 
 ### Smart Detection
 
-The workflow now handles these scenarios:
-- **Chart changes only**: Bumps versions for changed charts and updates docs
-- **Docs out of date only**: Bumps versions for charts with changed docs and updates docs
-- **Both**: Bumps versions for changed charts and updates docs (deduplicated)
-- **Neither**: No action taken
-- **Existing version bumps** (for example the zot publish pipeline already bumped `Chart.yaml`): skips a second version bump, regenerates helm-docs, and commits README-only updates with `[skip release]`
+The workflow handles these scenarios:
+- Chart changes only: Bumps versions for changed charts and updates docs
+- Docs out of date only: Bumps versions for charts with changed docs and updates docs
+- Both: Bumps versions for changed charts and updates docs (deduplicated)
+- Neither: No action taken
+- Existing version bumps (for example the zot publish pipeline already bumped `Chart.yaml`): skips a second version bump, regenerates helm-docs, and commits README-only updates so docs stay aligned with `appVersion` / `image.tag`
 
 ### Version Bump Detection
 
-The script intelligently detects if chart versions have already been bumped in the commits:
-- Uses `git diff` to check for version field changes in `Chart.yaml` files
-- Skips charts that already have version bumps to avoid double-bumping
+The script detects if chart versions have already been bumped in the commits:
+- Uses `git diff` to check for `version:` field changes in `Chart.yaml` files
+- Skips those charts to avoid double-bumping
 - Only processes charts that actually need version increments
-- The CI release job still refreshes and commits chart READMEs when the version was pre-bumped, so docs do not lag behind `appVersion` / `image.tag`
+- The CI release job still refreshes and commits chart READMEs when the version was pre-bumped
 
 ### Deduplication Logic
 
 The workflow prevents double version bumps using `chart-tracker.py`:
-1. **JSON State Management**: Uses `.chart-tracker.json` to track unique chart paths
-2. **Python Logic**: Handles deduplication with proper data structures
-3. **Command Interface**: Simple commands for adding charts and managing state
-4. **Automatic Cleanup**: Removes state file after processing
-
-### Chart Tracker Commands
-
-```bash
-# Process all changes and bump versions
-python3 ./scripts/chart_tracker.py process --since HEAD~1
-
-# Clean up state file
-python3 ./scripts/chart_tracker.py cleanup
-```
+1. JSON state management via `.chart-tracker.json` for unique chart paths
+2. Python logic for deduplication
+3. `process` / `cleanup` commands for adding charts and clearing state
 
 ### Why Version Bump for Docs?
 
-When documentation is out of date, it means the chart metadata (version, appVersion, etc.) has changed, which requires a new chart version to be published. The workflow identifies which specific charts have stale documentation and bumps only those versions.
+When documentation is out of date because chart metadata changed without a version bump in the same push, the tracker bumps the chart so a new release can publish. If the version was already bumped in that push, the workflow commits README updates only and does not bump again.
 
 ### Dependencies
 
-- **helm-docs**: Installed via GitHub Action `losisin/helm-docs-github-action@v1.6.2`
-- **Git**: Used to detect changed charts and for committing changes
-
+- helm-docs: Installed via GitHub Action `losisin/helm-docs-github-action@v1.6.2` (also invoked as `helm-docs` in the release job)
+- Git: Used to detect changed charts and for committing changes
+- PyYAML: Required by the Python scripts
