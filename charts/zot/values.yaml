@@ -380,6 +380,23 @@ metrics:
       secretName: basic-auth
       usernameKey: username
       passwordKey: password
+  # Grafana dashboard shipped as a ConfigMap, picked up by the Grafana
+  # dashboards sidecar (k8s-sidecar, as used by the grafana and
+  # kube-prometheus-stack charts). Independent of metrics.enabled.
+  grafanaDashboard:
+    # -- Create a ConfigMap with the zot Grafana dashboard
+    enabled: false
+    # -- Namespace for the ConfigMap (defaults to the release namespace).
+    # Set it if the sidecar only watches the Grafana namespace.
+    namespace: ""
+    # -- Labels the sidecar uses to find dashboards; must match
+    # sidecar.dashboards.label / labelValue of your Grafana. Extra labels are
+    # merged with the default; set grafana_dashboard: null to drop it.
+    labels:
+      grafana_dashboard: "1"
+    # -- Annotations for the ConfigMap, e.g. the target folder when
+    # sidecar.dashboards.folderAnnotation is set (grafana_folder: Registry)
+    annotations: {}
 # Test hooks configuration
 test:
   image:
