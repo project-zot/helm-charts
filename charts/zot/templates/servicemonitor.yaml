@@ -41,7 +41,7 @@ spec:
       {{- end }}
   namespaceSelector:
     matchNames:
-      - {{ .Release.Namespace }}
+      - {{ .Values.namespace | default .Release.Namespace }}
 {{- end }}
 {{- end }}
 {{- end }}
