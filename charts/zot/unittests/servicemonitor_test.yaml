@@ -1,0 +1,33 @@
+suite: test servicemonitor
+templates:
+  - servicemonitor.yaml
+release:
+  name: my-release
+  namespace: release-ns
+tests:
+  - it: should select the service in the release namespace by default
+    set:
+      metrics.enabled: true
+      metrics.serviceMonitor.enabled: true
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: release-ns
+      - equal:
+          path: spec.namespaceSelector.matchNames
+          value:
+            - release-ns
+
+  - it: should select the service in the namespace set by the namespace value
+    set:
+      namespace: zot-ns
+      metrics.enabled: true
+      metrics.serviceMonitor.enabled: true
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: zot-ns
+      - equal:
+          path: spec.namespaceSelector.matchNames
+          value:
+            - zot-ns
