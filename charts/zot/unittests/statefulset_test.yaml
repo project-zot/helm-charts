@@ -333,3 +333,15 @@ tests:
       - equal:
           path: spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]
           value: gpu-pool
+
+  - it: should not send authHeader on the probes
+    set:
+      persistence: true
+      authHeader: "Zm9vOmJhcg=="
+    asserts:
+      - notExists:
+          path: spec.template.spec.containers[0].livenessProbe.httpGet.httpHeaders
+      - notExists:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.httpHeaders
+      - notExists:
+          path: spec.template.spec.containers[0].startupProbe.httpGet.httpHeaders
