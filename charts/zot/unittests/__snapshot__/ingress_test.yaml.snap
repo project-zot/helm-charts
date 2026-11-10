@@ -8,6 +8,11 @@ should match snapshot of default values:
         kubernetes.io/tls-acme: "true"
       labels:
         app: zot
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: zot
+        app.kubernetes.io/version: v0.0.0-snapshot
+        helm.sh/chart: zot-0.0.0-snapshot
         release: RELEASE-NAME
       name: RELEASE-NAME-zot
       namespace: NAMESPACE
