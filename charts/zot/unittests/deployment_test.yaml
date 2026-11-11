@@ -200,3 +200,41 @@ tests:
           path: spec.template.spec.containers[0].readinessProbe.httpGet.httpHeaders
       - notExists:
           path: spec.template.spec.containers[0].startupProbe.httpGet.httpHeaders
+
+  - it: should omit securityContext and resources when they are empty
+    set:
+      persistence: false
+    asserts:
+      - notExists:
+          path: spec.template.spec.securityContext
+      - notExists:
+          path: spec.template.spec.containers[0].securityContext
+      - notExists:
+          path: spec.template.spec.containers[0].resources
+
+  - it: should render securityContext, resources and imagePullSecrets when set
+    set:
+      persistence: false
+      imagePullSecrets:
+        - name: regcred
+      podSecurityContext:
+        fsGroup: 1000
+      securityContext:
+        runAsNonRoot: true
+      resources:
+        limits:
+          memory: 1Gi
+    asserts:
+      - equal:
+          path: spec.template.spec.imagePullSecrets
+          value:
+            - name: regcred
+      - equal:
+          path: spec.template.spec.securityContext.fsGroup
+          value: 1000
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsNonRoot
+          value: true
+      - equal:
+          path: spec.template.spec.containers[0].resources.limits.memory
+          value: 1Gi

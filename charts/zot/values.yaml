@@ -20,11 +20,17 @@ config: {}
 #   log:
 #     level: debug
 replicaCount: 1
+# -- Override the chart name used in resource names and the app.kubernetes.io/name label.
+nameOverride: ""
+# -- Override the full resource name (defaults to `<release>-zot`).
+fullnameOverride: ""
 image:
   repository: ghcr.io/project-zot/zot
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "v2.1.23"
+# -- Image pull secrets for the zot pods, e.g. `[{name: regcred}]`.
+imagePullSecrets: []
 # Defaults to the release namespace if not specified
 namespace: ""
 serviceAccount:
@@ -318,6 +324,20 @@ strategy:
 extraArgs: []
 podAnnotations: {}
 podLabels: {}
+# -- Pod-level security context.
+podSecurityContext: {}
+# fsGroup: 1000
+# -- Security context for the zot container.
+securityContext: {}
+# runAsNonRoot: true
+# readOnlyRootFilesystem: true
+# -- CPU/memory resource requests and limits for the zot container.
+resources: {}
+# requests:
+#   cpu: 100m
+#   memory: 256Mi
+# -- When true, add a random pod annotation so every upgrade rolls the pods.
+forceRoll: false
 deploymentAnnotations: {}
 priorityClassName: ""
 dnsConfig: {}
@@ -377,6 +397,12 @@ metrics:
     interval: "30s"
     # Specify the path to scrape metrics from
     path: "/metrics"
+    # Optional: scrape timeout, e.g. "10s"
+    scrapeTimeout: ""
+    # Optional: "https" when TLS is enabled in the zot config
+    scheme: ""
+    # Optional: service label used as the Prometheus job name
+    jobLabel: ""
     # basicAuth credentials for serviceMonitor
     basicAuth:
       secretName: basic-auth
