@@ -1,6 +1,6 @@
 # zot
 
-![Version: 0.1.132](https://img.shields.io/badge/Version-0.1.132-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v2.1.23](https://img.shields.io/badge/AppVersion-v2.1.23-informational?style=flat-square)
+![Version: 0.1.133](https://img.shields.io/badge/Version-0.1.133-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: v2.1.23](https://img.shields.io/badge/AppVersion-v2.1.23-informational?style=flat-square)
 
 A zot registry helm chart for Kubernetes
 
@@ -21,6 +21,8 @@ A zot registry helm chart for Kubernetes
 | extraObjects | list | `[]` | List of arbitrary Kubernetes objects deployed as part of the Helm release. Rendered through Helm `tpl` with the root context, so objects may use `.Release.Name`, `.Release.Namespace`, `.Values.*`, and chart helpers. |
 | extraVolumeMounts | list | `[]` |  |
 | extraVolumes | list | `[]` |  |
+| forceRoll | bool | `false` | When true, add a random pod annotation so every upgrade rolls the pods. |
+| fullnameOverride | string | `""` | Override the full resource name (defaults to `<release>-zot`). |
 | hostAliases | list | `[]` |  |
 | httpGet.port | int | `5000` |  |
 | httpGet.scheme | string | `"HTTP"` |  |
@@ -36,6 +38,7 @@ A zot registry helm chart for Kubernetes
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"ghcr.io/project-zot/zot"` |  |
 | image.tag | string | `"v2.1.23"` |  |
+| imagePullSecrets | list | `[]` | Image pull secrets for the zot pods, e.g. `[{name: regcred}]`. |
 | ingress.annotations | object | `{}` |  |
 | ingress.className | string | `"nginx"` |  |
 | ingress.enabled | bool | `false` |  |
@@ -60,9 +63,13 @@ A zot registry helm chart for Kubernetes
 | metrics.serviceMonitor.basicAuth.usernameKey | string | `"username"` |  |
 | metrics.serviceMonitor.enabled | bool | `false` |  |
 | metrics.serviceMonitor.interval | string | `"30s"` |  |
+| metrics.serviceMonitor.jobLabel | string | `""` |  |
 | metrics.serviceMonitor.path | string | `"/metrics"` |  |
+| metrics.serviceMonitor.scheme | string | `""` |  |
+| metrics.serviceMonitor.scrapeTimeout | string | `""` |  |
 | mountConfig | bool | `false` |  |
 | mountSecret | bool | `false` |  |
+| nameOverride | string | `""` | Override the chart name used in resource names and the app.kubernetes.io/name label. |
 | namespace | string | `""` |  |
 | nodeSelector | object | `{}` | Node selector for pod assignment. Rendered through `tpl`, so values may contain Helm template expressions (e.g. `{{ .Values.global.pool }}`); a value with no `{{ }}` markers is emitted unchanged. Do not template untrusted input. To output a literal brace, escape it, e.g. `{{ "{{" }}`. |
 | persistence | bool | `false` |  |
@@ -72,6 +79,7 @@ A zot registry helm chart for Kubernetes
 | podDisruptionBudget.maxUnavailable | string | `nil` | Maximum number/percentage of pods that can be unavailable during a disruption. Mutually exclusive with `minAvailable`. |
 | podDisruptionBudget.minAvailable | string | `nil` | Minimum number/percentage of pods that must remain available during a disruption. Mutually exclusive with `maxUnavailable`. |
 | podLabels | object | `{}` |  |
+| podSecurityContext | object | `{}` | Pod-level security context. |
 | priorityClassName | string | `""` |  |
 | pvc.accessModes[0] | string | `"ReadWriteOnce"` |  |
 | pvc.create | bool | `true` |  |
@@ -79,7 +87,9 @@ A zot registry helm chart for Kubernetes
 | pvc.storage | string | `"8Gi"` |  |
 | pvc.storageClassName | string | `nil` |  |
 | replicaCount | int | `1` |  |
+| resources | object | `{}` | CPU/memory resource requests and limits for the zot container. |
 | secretFiles.htpasswd | string | `"admin:$2y$05$vmiurPmJvHylk78HHFWuruFFVePlit9rZWGA/FbZfTEmNRneGJtha\nuser:$2y$05$L86zqQDfH5y445dcMlwu6uHv.oXFgT6AiJCwpv3ehr7idc0rI3S2G"` |  |
+| securityContext | object | `{}` | Security context for the zot container. |
 | service.annotations | object | `{}` |  |
 | service.clusterIP | string | `nil` |  |
 | service.externalTrafficPolicy | string | `""` |  |
