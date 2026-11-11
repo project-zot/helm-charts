@@ -9,6 +9,7 @@ metadata:
   name: {{ $fullName }}
   namespace: {{ .Values.namespace | default .Release.Namespace }}
   labels:
+    {{- include "zot.labels" . | nindent 4 }}
     app: {{ .Chart.Name }}
     release: {{ .Release.Name }}
 {{- with .Values.ingress.annotations }}
@@ -21,17 +22,7 @@ spec:
   {{- end }}
 {{- if .Values.ingress.tls }}
   tls:
-  {{- if .ingressPath }}
-  {{- range  .Values.ingress.tls }}
-  - hosts:
-    {{- range  .hosts }}
-      - {{ . }}
-    {{- end }}
-    secretName: {{ .secretName }}
-  {{- end }}
-{{- else }}
 {{ toYaml .Values.ingress.tls | indent 4 }}
-  {{- end }}
 {{- end}}
   rules:
   {{- range .Values.ingress.hosts }}
