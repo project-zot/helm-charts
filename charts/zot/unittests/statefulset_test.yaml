@@ -383,3 +383,34 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].resources.limits.memory
           value: 1Gi
+
+  - it: should not set GODEBUG when fips140 is empty
+    set:
+      persistence: true
+    asserts:
+      - isNullOrEmpty:
+          path: spec.template.spec.containers[0].env
+
+  - it: should set GODEBUG=fips140 before the user env when fips140 is set
+    set:
+      persistence: true
+      fips140: only
+      env:
+        - name: TEST
+          value: ME
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].env
+          value:
+            - name: GODEBUG
+              value: fips140=only
+            - name: TEST
+              value: ME
+
+  - it: should reject an unknown fips140 value
+    set:
+      persistence: true
+      fips140: "yes"
+    asserts:
+      - failedTemplate:
+          errorMessage: fips140 must be "on" or "only", got "yes"

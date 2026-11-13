@@ -91,7 +91,16 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           env:
-            {{- toYaml .Values.env | nindent 12 }}
+            {{- with .Values.fips140 }}
+            {{- if not (has . (list "on" "only")) }}
+            {{- fail (printf "fips140 must be \"on\" or \"only\", got %q" .) }}
+            {{- end }}
+            - name: GODEBUG
+              value: {{ printf "fips140=%s" . | quote }}
+            {{- end }}
+            {{- with .Values.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           ports:
             - name: zot
               containerPort: {{ .Values.httpGet.port }}
