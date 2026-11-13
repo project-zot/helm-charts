@@ -277,6 +277,10 @@ pvc:
   storage: 8Gi
   # Name of the storage class to use if it is different than the default one
   storageClassName: null
+# -- Run zot in Go's FIPS 140-3 mode by setting `GODEBUG=fips140=<value>` on
+# the container: "on" enables the FIPS module, "only" also makes non-approved
+# algorithms fail. Empty leaves GODEBUG unset.
+fips140: ""
 # List of environment variables to set on the container
 env:
 # - name: "TEST"
