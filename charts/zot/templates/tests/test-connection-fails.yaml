@@ -1,3 +1,4 @@
+{{- if and .Values.test (ne .Values.test.enabled false) }}
 apiVersion: v1
 kind: Pod
 metadata:
@@ -31,3 +32,4 @@ spec:
           wget --no-check-certificate $scheme://{{ include "zot.fullname" . }}:{{ .Values.service.port }}/v2/_catalog
         {{- end }}
   restartPolicy: Never
+{{- end }}

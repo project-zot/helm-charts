@@ -108,6 +108,7 @@ A zot registry helm chart for Kubernetes
 | startupProbe.initialDelaySeconds | int | `5` |  |
 | startupProbe.periodSeconds | int | `10` |  |
 | strategy.type | string | `"RollingUpdate"` |  |
+| test.enabled | bool | `true` | Render the `helm test` hooks. Set to false to leave them out of the release. |
 | test.image.repository | string | `"alpine"` |  |
 | test.image.tag | string | `"3.18"` |  |
 | tolerations | list | `[]` | Tolerations for pod assignment. Also rendered through `tpl` (same escaping / untrusted-input note as nodeSelector above). |
