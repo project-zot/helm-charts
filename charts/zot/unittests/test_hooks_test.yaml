@@ -15,6 +15,18 @@ tests:
           path: metadata.annotations["helm.sh/hook"]
           value: test
 
+  - it: should render the test hooks when test.enabled is unset
+    set:
+      test.enabled: null
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: Pod
+      - equal:
+          path: metadata.annotations["helm.sh/hook"]
+          value: test
+
   - it: should not render the test hooks when test.enabled is false
     set:
       test.enabled: false
