@@ -410,6 +410,8 @@ metrics:
       passwordKey: password
 # Test hooks configuration
 test:
+  # -- Render the `helm test` hooks. Set to false to leave them out of the release.
+  enabled: true
   image:
     repository: alpine
     tag: "3.18"

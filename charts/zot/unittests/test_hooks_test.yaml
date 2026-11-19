@@ -1,0 +1,30 @@
+suite: test hooks tests
+templates:
+  - tests/test-connection.yaml
+  - tests/test-connection-fails.yaml
+release:
+  name: my-release
+tests:
+  - it: should render the test hooks by default
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: Pod
+      - equal:
+          path: metadata.annotations["helm.sh/hook"]
+          value: test
+
+  - it: should not render the test hooks when test.enabled is false
+    set:
+      test.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should not fail if test is absent
+    set:
+      test: null
+    asserts:
+      - hasDocuments:
+          count: 0
