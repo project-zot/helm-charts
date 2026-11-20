@@ -1,0 +1,21 @@
+{{- if and .Values.metrics .Values.metrics.grafanaDashboard }}
+{{- if .Values.metrics.grafanaDashboard.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "zot.fullname" . }}-grafana-dashboard
+  namespace: {{ .Values.metrics.grafanaDashboard.namespace | default (.Values.namespace | default .Release.Namespace) }}
+  labels:
+    {{- include "zot.labels" . | nindent 4 }}
+    {{- with .Values.metrics.grafanaDashboard.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.metrics.grafanaDashboard.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+data:
+  zot-registry.json: |-
+    {{- .Files.Get "dashboards/zot-registry.json" | nindent 4 }}
+{{- end }}
+{{- end }}
