@@ -414,3 +414,25 @@ tests:
     asserts:
       - failedTemplate:
           errorMessage: fips140 must be "on" or "only", got "yes"
+
+  - it: should reject a non-string fips140 value
+    set:
+      persistence: true
+      fips140: false
+    asserts:
+      - failedTemplate:
+          errorMessage: fips140 must be "on" or "only", got "false"
+
+  - it: should not add a second GODEBUG when the user env sets one
+    set:
+      persistence: true
+      fips140: only
+      env:
+        - name: GODEBUG
+          value: fips140=on,http2client=0
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].env
+          value:
+            - name: GODEBUG
+              value: fips140=on,http2client=0

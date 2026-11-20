@@ -91,12 +91,19 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           env:
-            {{- with .Values.fips140 }}
-            {{- if not (has . (list "on" "only")) }}
-            {{- fail (printf "fips140 must be \"on\" or \"only\", got %q" .) }}
+            {{- $fips140 := .Values.fips140 }}
+            {{- if not (or (kindIs "invalid" $fips140) (has $fips140 (list "" "on" "only"))) }}
+            {{- fail (printf "fips140 must be \"on\" or \"only\", got %q" (toString $fips140)) }}
             {{- end }}
+            {{- $userGodebug := false }}
+            {{- range .Values.env }}
+            {{- if eq (toString .name) "GODEBUG" }}
+            {{- $userGodebug = true }}
+            {{- end }}
+            {{- end }}
+            {{- if and $fips140 (not $userGodebug) }}
             - name: GODEBUG
-              value: {{ printf "fips140=%s" . | quote }}
+              value: {{ printf "fips140=%s" $fips140 | quote }}
             {{- end }}
             {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
