@@ -1,0 +1,61 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/helm-unittest/helm-unittest/main/schema/helm-testsuite.json
+suite: test NOTES
+templates:
+  - NOTES.txt
+release:
+  name: my-zot
+  namespace: release-ns
+tests:
+  - it: uses the namespace value for the NodePort lookup
+    set:
+      namespace: zot-system
+    asserts:
+      - matchRegexRaw:
+          pattern: kubectl get --namespace zot-system -o jsonpath="\{\.spec\.ports\[0\]\.nodePort\}" services my-zot
+      - notMatchRegexRaw:
+          pattern: release-ns
+  - it: falls back to the release namespace for NodePort
+    asserts:
+      - matchRegexRaw:
+          pattern: kubectl get --namespace release-ns -o jsonpath="\{\.spec\.ports\[0\]\.nodePort\}" services my-zot
+      - matchRegexRaw:
+          pattern: echo http://\$NODE_IP:\$NODE_PORT
+  - it: uses https when the probes use HTTPS
+    set:
+      httpGet.scheme: HTTPS
+    asserts:
+      - matchRegexRaw:
+          pattern: echo https://\$NODE_IP:\$NODE_PORT
+  - it: prints a port-forward command for ClusterIP
+    set:
+      namespace: zot-system
+      service.type: ClusterIP
+    asserts:
+      - matchRegexRaw:
+          pattern: kubectl --namespace zot-system port-forward svc/my-zot 5000:5000
+  - it: prints the LoadBalancer address lookup
+    set:
+      service.type: LoadBalancer
+      service.port: 443
+    asserts:
+      - matchRegexRaw:
+          pattern: kubectl get svc --namespace release-ns my-zot --template "\{\{ range \(index \.status\.loadBalancer\.ingress 0\) \}\}\{\{\.\}\}\{\{ end \}\}"
+      - matchRegexRaw:
+          pattern: echo http://\$SERVICE_IP:443
+  - it: prints the ingress hosts when the ingress is enabled
+    set:
+      ingress.enabled: true
+      ingress.hosts:
+        - host: zot.example.com
+          paths:
+            - path: /
+      ingress.tls:
+        - secretName: zot-tls
+          hosts:
+            - zot.example.com
+    asserts:
+      - matchRegexRaw:
+          pattern: https://zot.example.com
+      - notMatchRegexRaw:
+          pattern: NODE_PORT
