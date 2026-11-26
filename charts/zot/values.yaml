@@ -340,6 +340,7 @@ resources: {}
 forceRoll: false
 deploymentAnnotations: {}
 priorityClassName: ""
+runtimeClassName: ""
 dnsConfig: {}
 dnsPolicy: "ClusterFirst"
 hostAliases: []
