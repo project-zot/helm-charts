@@ -38,7 +38,6 @@ A zot registry helm chart for Kubernetes
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"ghcr.io/project-zot/zot"` |  |
 | image.tag | string | `"v2.1.23"` |  |
-| imagePullSecrets | list | `[]` | Image pull secrets for the zot pods, e.g. `[{name: regcred}]`. |
 | ingress.annotations | object | `{}` |  |
 | ingress.className | string | `"nginx"` |  |
 | ingress.enabled | bool | `false` |  |
@@ -80,6 +79,7 @@ A zot registry helm chart for Kubernetes
 | podDisruptionBudget.minAvailable | string | `nil` | Minimum number/percentage of pods that must remain available during a disruption. Mutually exclusive with `maxUnavailable`. |
 | podLabels | object | `{}` |  |
 | podSecurityContext | object | `{}` | Pod-level security context. |
+| podSecurityContext | object | `{"fsGroup":65532}` | Pod security context. fsGroup 65532 lets the non-root image write the data volume. Files created by the previous root image are mode 0600 and directories mode 0700. fsGroup updates group ownership on volume types that support it. A hostPath that stays owned by root still needs a one-time chown to 65532. |
 | priorityClassName | string | `""` |  |
 | pvc.accessModes[0] | string | `"ReadWriteOnce"` |  |
 | pvc.create | bool | `true` |  |
@@ -90,6 +90,7 @@ A zot registry helm chart for Kubernetes
 | resources | object | `{}` | CPU/memory resource requests and limits for the zot container. |
 | secretFiles.htpasswd | string | `"admin:$2y$05$vmiurPmJvHylk78HHFWuruFFVePlit9rZWGA/FbZfTEmNRneGJtha\nuser:$2y$05$L86zqQDfH5y445dcMlwu6uHv.oXFgT6AiJCwpv3ehr7idc0rI3S2G"` |  |
 | securityContext | object | `{}` | Security context for the zot container. |
+| securityContext | object | `{"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | Container security context. Matches the image user, uid/gid 65532. |
 | service.annotations | object | `{}` |  |
 | service.clusterIP | string | `nil` |  |
 | service.externalTrafficPolicy | string | `""` |  |

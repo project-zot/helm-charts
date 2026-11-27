@@ -255,6 +255,17 @@ secretFiles:
 # volume for zot on '/var/lib/registry'; by default the pvc used is named
 # '$CHART_RELEASE-pvc', but the name can be changed below
 persistence: false
+# -- Pod security context. fsGroup 65532 lets the non-root image write the data volume.
+# Files created by the previous root image are mode 0600 and directories mode 0700.
+# fsGroup updates group ownership on volume types that support it. A hostPath that
+# stays owned by root still needs a one-time chown to 65532.
+podSecurityContext:
+  fsGroup: 65532
+# -- Container security context. Matches the image user, uid/gid 65532.
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
 # PVC data, only used if persistence is 'true'
 pvc:
   # When true, the StatefulSet uses volumeClaimTemplates to dynamically provision
